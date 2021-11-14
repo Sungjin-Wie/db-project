@@ -5,9 +5,9 @@ node_modules
 .pnp
 .pnp.js
 
-/coverage
+coverage
 
-/build
+build
 
 # misc
 .DS_Store
