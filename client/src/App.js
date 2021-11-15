@@ -1,19 +1,13 @@
-import './App.css';
+import "./App.css";
 import {
   BrowserRouter as Router,
   Navigate as Redirect,
   Routes,
   Route,
 } from "react-router-dom";
-import { AppBar } from './components';
+import { AppBar } from "./components";
 
-import { 
-  Main, 
-  Play, 
-  Ranking,
-  Signin,
-  Signup
- } from './pages';
+import { Main, Play, Ranking, Signin, Signup, Oops } from "./pages";
 
 const App = () => {
   return (
@@ -30,6 +24,5 @@ const App = () => {
     </Router>
   );
 };
-
 
 export default App;
