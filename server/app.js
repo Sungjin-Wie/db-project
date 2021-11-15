@@ -16,13 +16,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../client/build')));
+const index = path.join(__dirname, "../client/build", "index.html");
 
 app.get("/", (req, res) => {
   console.log(__dirname);
-  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  res.sendFile(index);
 });
 
 app.use('/api', apiRouter);
+
+app.get("*", (req, res) => {
+  console.log(__dirname);
+  res.sendFile(index);
+});
 
 app.use(function(req, res, next) {
   next(createError(404));

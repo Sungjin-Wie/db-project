@@ -1,11 +1,11 @@
 import Axios from "axios";
 
 let api = {
-  url: "http://sungjin-home.iptime.org/api",
+  url: "http://db-online.kro.kr/api",
   call: Axios.create({
     baseURL:
       process.env.NODE_ENV === "production"
-        ? "http://sungjin-home.iptime.org/api"
+        ? "http://db-online.kro.kr/api"
         : "http://localhost:3000/api",
   }),
 };
