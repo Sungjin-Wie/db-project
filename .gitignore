@@ -2,12 +2,13 @@ remote-repo
 .vscode
 
 node_modules
-.pnp
+.pnpß
 .pnp.js
 
 coverage
 
 build
+.env
 
 # misc
 .DS_Store
