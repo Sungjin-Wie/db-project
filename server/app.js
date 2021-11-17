@@ -26,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api", apiRouter);
 
 app.get("*", (req, res) => {
+  console.log("access *")
   console.log(__dirname);
   res.sendFile(index);
 });
