@@ -7,6 +7,18 @@ var logger = require("morgan");
 var apiRouter = require("./routes/api");
 
 var app = express();
+app.all("*", (req, res, next) => {
+  let protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  if (protocol == "https") {
+    next();
+  } else {
+    console.log("http!!");
+    let from = `${protocol}://${req.hostname}${req.url}`;
+    let to = `https://${req.hostname}${req.url}`;
+    console.log(`[${req.method}]: ${from} -> ${to}`);
+    res.redirect(to);
+  }
+});
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
@@ -26,7 +38,6 @@ app.get("/", (req, res) => {
 app.use("/api", apiRouter);
 
 app.get("*", (req, res) => {
-  console.log("access *")
   console.log(__dirname);
   res.sendFile(index);
 });

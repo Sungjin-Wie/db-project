@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "DB온라인",
+  "name": "DB온라인에 오신 것을 환영합니다.",
   "icons": [
     {
       "src": "favicon.ico",
