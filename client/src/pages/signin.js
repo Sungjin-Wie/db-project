@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userLogin } from "../lib/actions";
 
 function Copyright(props) {
@@ -25,7 +25,7 @@ function Copyright(props) {
       {...props}
     >
       {"Copyright © "}
-      <Link color="inherit" href="http://db-online.kro.kr/">
+      <Link color="inherit" href="https://db-online.kro.kr/">
         DB Online
       </Link>{" "}
       {new Date().getFullYear()}
@@ -39,21 +39,23 @@ const theme = createTheme();
 export default function SignIn() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user);
+  React.useEffect(() => {
+    if (user.isLoggedIn) {
+      navigate("/");
+    }
+  }, []);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
     dispatch(
       userLogin({
         email: data.get("email"),
         password: data.get("password"),
+        navigate,
       })
     );
-    navigate("/");
   };
 
   return (

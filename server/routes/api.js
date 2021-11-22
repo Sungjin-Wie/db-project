@@ -1,9 +1,15 @@
 var express = require("express");
 var router = express.Router();
 var connection = require("../db/mysql");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
+const salt = Number(process.env.SALT);
+const crypt = (password) => bcrypt.hashSync(password, salt);
 const q = require("../db/query");
+
 const $ = (asyncFn) => async (req, res, next) =>
   await asyncFn(req, res, next).catch(next);
+
 const params = (...params) => [...params];
 
 /* GET users listing. */
@@ -13,6 +19,19 @@ router.get(
     res.send("respond with a resource");
   })
 );
+
+// router.get(
+//   "/test",
+//   $(async (req, res, next) => {
+//     await connection
+//       .promise()
+//       .query(
+//         q.insert.PLAYER,
+//         params(crypt("password1!"), "이름하야2", "tmdwls1203@test.com2")
+//       );
+//     res.send("created");
+//   })
+// );
 
 router.get(
   "/all",
@@ -30,19 +49,75 @@ router.get(
   })
 );
 
-router.get(
-  "/createplayer",
+router.post(
+  "/signin",
   $(async (req, res, next) => {
-    console.log("/api/createplayer");
-    // await connection
-    //   .promise()
-    //   .query(
-    //     q.insert.PLAYER,
-    //     params("passwordtest", "테스트유저2", "test@test.2")
-    //   );
-    res.send("foo");
+    console.log("/api/signin");
+    console.log(req.body);
+    const { email, password } = req.body;
+    let response = await connection
+      .promise()
+      .query(q.select.SIGNIN_EMAIL, params(email));
+    console.log(response[0]);
+    if (response[0].length === 0) {
+      // 아이디가 없는 경우 101 반환
+      console.log("No ID Found");
+      res.send("101");
+    } else {
+      console.log("ID Correct");
+      let cryptedPassword = response[0][0].PLAYER_PW;
+      console.log(response[0][0]);
+      let isPasswordCorrect = await bcrypt.compare(password, cryptedPassword);
+      console.log("isPasswordCorrect: ", isPasswordCorrect);
+      if (!isPasswordCorrect) {
+        // 비밀번호가 틀린 경우 102 반환
+        res.send("102");
+      } else {
+        // 로그인에 성공하는 경우 로그인 정보 반환
+        const data = {
+          email: response[0][0].PLAYER_EMAIL,
+          name: response[0][0].PLAYER_NAME,
+        };
+        console.log(data);
+        res.send(data);
+      }
+    }
   })
 );
+
+router.post(
+  "/signup",
+  $(async (req, res, next) => {
+    console.log("/api/signup");
+    console.log(req.body);
+    const { email, password, name } = req.body;
+    let response = await connection
+      .promise()
+      .query(q.select.SIGNUP_EMAIL, params(email));
+    console.log(response[0][0], response[0].length);
+    if (response[0].length == 1) {
+      //아이디가 있는 경우 101 반환
+      console.log("아이디가 존재합니다");
+      res.send("101");
+    } else {
+      response = await connection
+        .promise()
+        .query(q.select.SIGNUP_NAME, params(name));
+      console.log(response[0][0], response[0].length);
+      if (response[0].length == 1) {
+        // 이름이 존재하는 경우 102 반환
+        console.log("이름이 존재합니다.");
+        res.send("102");
+      } else {
+        await connection
+          .promise()
+          .query(q.insert.PLAYER, params(crypt(password), name, email));
+        res.send("100");
+      }
+    }
+  })
+);
+
 // 플레이어가 존재하는지 확인하고,
 // 메일이 중복이면 이미 존재하는 계정 오류를,
 // 아이디가 중복이면 아이디 중복을,
@@ -82,10 +157,7 @@ router.get(
         console.log("createcharacter");
         await connection
           .promise()
-          .query(
-            q.insert.CHARACTER,
-            params(10000005, 1000000, "테스트캐릭타")
-          );
+          .query(q.insert.CHARACTER, params(10000005, 1000000, "테스트캐릭타"));
         res.send("created");
       }
     }
