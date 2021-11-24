@@ -20,10 +20,18 @@ export const userLogin = (payload) => async (dispatch) => {
     console.log(res.data);
     switch (res.data) {
       case 101: {
-        alert("존재하지 않는 아이디입니다.");
+        alert("아이디를 입력해주세요.");
         return dispatch({ type: ERROR });
       }
       case 102: {
+        alert("비밀번호를 입력해주세요.");
+        return dispatch({ type: ERROR });
+      }
+      case 103: {
+        alert("존재하지 않는 아이디입니다.");
+        return dispatch({ type: ERROR });
+      }
+      case 104: {
         alert("비밀번호가 틀렸습니다.");
         return dispatch({ type: ERROR });
       }

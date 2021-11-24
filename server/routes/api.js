@@ -55,31 +55,37 @@ router.post(
     console.log("/api/signin");
     console.log(req.body);
     const { email, password } = req.body;
-    let response = await connection
-      .promise()
-      .query(q.select.SIGNIN_EMAIL, params(email));
-    console.log(response[0]);
-    if (response[0].length === 0) {
-      // 아이디가 없는 경우 101 반환
-      console.log("No ID Found");
+    if (email == "") {
+      // 아이디 미입력시 101 반환
       res.send("101");
+    } else if (password == "") {
+      // 비밀번호 미입력시 102 반환
+      res.send("102");
     } else {
-      console.log("ID Correct");
-      let cryptedPassword = response[0][0].PLAYER_PW;
-      console.log(response[0][0]);
-      let isPasswordCorrect = await bcrypt.compare(password, cryptedPassword);
-      console.log("isPasswordCorrect: ", isPasswordCorrect);
-      if (!isPasswordCorrect) {
-        // 비밀번호가 틀린 경우 102 반환
-        res.send("102");
+      let response = await connection
+        .promise()
+        .query(q.select.SIGNIN_EMAIL, params(email));
+      if (response[0].length === 0) {
+        // 아이디가 없는 경우 103 반환
+        console.log("No ID Found");
+        res.send("103");
       } else {
-        // 로그인에 성공하는 경우 로그인 정보 반환
-        const data = {
-          email: response[0][0].PLAYER_EMAIL,
-          name: response[0][0].PLAYER_NAME,
-        };
-        console.log(data);
-        res.send(data);
+        console.log("ID Correct");
+        let cryptedPassword = response[0][0].PLAYER_PW;
+        let isPasswordCorrect = await bcrypt.compare(password, cryptedPassword);
+        console.log("isPasswordCorrect: ", isPasswordCorrect);
+        if (!isPasswordCorrect) {
+          // 비밀번호가 틀린 경우 104 반환
+          res.send("104");
+        } else {
+          // 로그인에 성공하는 경우 로그인 정보 반환
+          const data = {
+            email: response[0][0].PLAYER_EMAIL,
+            name: response[0][0].PLAYER_NAME,
+          };
+          console.log(data);
+          res.send(data);
+        }
       }
     }
   })
@@ -94,7 +100,7 @@ router.post(
     let response = await connection
       .promise()
       .query(q.select.SIGNUP_EMAIL, params(email));
-    console.log(response[0][0], response[0].length);
+    console.log(response[0].length);
     if (response[0].length == 1) {
       //아이디가 있는 경우 101 반환
       console.log("아이디가 존재합니다");
@@ -103,7 +109,7 @@ router.post(
       response = await connection
         .promise()
         .query(q.select.SIGNUP_NAME, params(name));
-      console.log(response[0][0], response[0].length);
+      console.log(response[0].length);
       if (response[0].length == 1) {
         // 이름이 존재하는 경우 102 반환
         console.log("이름이 존재합니다.");

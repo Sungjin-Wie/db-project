@@ -35,6 +35,11 @@ app.get("/", (req, res) => {
   res.sendFile(index);
 });
 
+app.get("/sitemap.xml", (req, res, next) => {
+  res.header("Content-Type", "text/xml");
+  res.sendFile(path.join(__dirname, "../client/build", "sitemap.xml"));
+});
+
 app.use("/api", apiRouter);
 
 app.get("*", (req, res) => {

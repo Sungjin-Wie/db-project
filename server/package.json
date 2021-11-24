@@ -6,6 +6,7 @@
     "dev": "NODE_ENV=development nodemon ./bin/www",
     "start": "NODE_ENV=production pm2 start ./bin/www --watch",
     "stop": "pm2 stop ./bin/www",
+    "restart": "yarn stop && yarn start",
     "build": "cd ../client && yarn build"
   },
   "dependencies": {

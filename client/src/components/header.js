@@ -43,17 +43,7 @@ export default function PrimarySearchAppBar() {
                 게임 시작
               </Typography>
             </Button>
-            <Button variant="text" onClick={() => navigate("/ranking")}>
-              <Typography
-                variant="h6"
-                noWrap
-                component="div"
-                color="white"
-                sx={{ display: { xs: "flex", sm: "block" } }}
-              >
-                랭킹
-              </Typography>
-            </Button>
+
             {isLoggedIn ? (
               <Button variant="text" disabled onClick={() => {}}>
                 <Typography
