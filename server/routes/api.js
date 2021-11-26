@@ -6,6 +6,10 @@ require("dotenv").config();
 const salt = Number(process.env.SALT);
 const crypt = (password) => bcrypt.hashSync(password, salt);
 const q = require("../db/query");
+const query = async (...args) =>
+  args.length == 1
+    ? await connection.promise().query(...args)
+    : await connection.promise().query(args[0], args[1]);
 
 const $ = (asyncFn) => async (req, res, next) =>
   await asyncFn(req, res, next).catch(next);
@@ -37,12 +41,12 @@ router.get(
   "/all",
   $(async (req, res, next) => {
     console.log("/api/all");
-    const sql1 = "SELECT * FROM PLAYERS ";
-    const sql2 = "SELECT CHAR_ID, PLAYER_ID, CHAR_NAME FROM CHARACTERS ";
+    const sql1 = "SELECT * FROM PLAYERS WHERE 1=?;";
+    const sql2 = "SELECT CHAR_ID, PLAYER_ID, CHAR_NAME FROM CHARACTERS;";
     let data = {};
-    let response = await connection.promise().query(sql1);
+    let response = await query(sql1, [1]);
     data.players = response[0];
-    response = await connection.promise().query(sql2);
+    response = await query(sql2);
     data.characters = response[0];
     console.log(data);
     res.send(data);
@@ -62,9 +66,7 @@ router.post(
       // 비밀번호 미입력시 102 반환
       res.send("102");
     } else {
-      let response = await connection
-        .promise()
-        .query(q.select.SIGNIN_EMAIL, params(email));
+      let response = await query(q.select.SIGNIN_EMAIL, params(email));
       if (response[0].length === 0) {
         // 아이디가 없는 경우 103 반환
         console.log("No ID Found");
@@ -97,29 +99,27 @@ router.post(
     console.log("/api/signup");
     console.log(req.body);
     const { email, password, name } = req.body;
-    let response = await connection
-      .promise()
-      .query(q.select.SIGNUP_EMAIL, params(email));
-    console.log(response[0].length);
-    if (response[0].length == 1) {
-      //아이디가 있는 경우 101 반환
-      console.log("아이디가 존재합니다");
-      res.send("101");
-    } else {
-      response = await connection
-        .promise()
-        .query(q.select.SIGNUP_NAME, params(name));
+    if (email != "" && password != "" && name != "") {
+      let response = await query(q.select.SIGNUP_EMAIL, params(email));
       console.log(response[0].length);
       if (response[0].length == 1) {
-        // 이름이 존재하는 경우 102 반환
-        console.log("이름이 존재합니다.");
-        res.send("102");
+        //아이디가 있는 경우 101 반환
+        console.log("아이디가 존재합니다");
+        res.send("101");
       } else {
-        await connection
-          .promise()
-          .query(q.insert.PLAYER, params(crypt(password), name, email));
-        res.send("100");
+        response = await query(q.select.SIGNUP_NAME, params(name));
+        console.log(response[0].length);
+        if (response[0].length == 1) {
+          // 이름이 존재하는 경우 102 반환
+          console.log("이름이 존재합니다.");
+          res.send("102");
+        } else {
+          await query(q.insert.PLAYER, params(crypt(password), name, email));
+          res.send("100");
+        }
       }
+    } else {
+      res.send("103");
     }
   })
 );
@@ -133,40 +133,59 @@ router.get(
   "/ranking",
   $(async (req, res, next) => {
     console.log("ranking");
-    const [rows] = await connection.promise().query(q.select.RANKING);
+    const [rows] = await query(q.select.RANKING);
     console.log(rows);
     res.send(rows);
   })
 );
 
-router.get(
+router.post(
   "/createcharacter",
   $(async (req, res, next) => {
     //유저명, 만들 캐릭터명을 받는다
     console.log("searchcharacter");
-    let [rows] = await connection
-      .promise()
-      .query(q.select.CHARACTER, params("fdas"));
+    console.log(req.body);
+    const { characterName, name } = req.body;
+    let [rows] = await query(q.select.CHARACTER, params(characterName));
     console.log(rows.length);
     if (rows.length === 1) {
-      //이미 있는 캐릭터명일 경우
+      //이미 있는 캐릭터명일 경우 101 전송
       console.log("already exists");
-      res.send("exists");
+      res.send("101");
     } else {
-      let [rows] = await connection
-        .promise()
-        .query(q.select.CHARACTER_COUNT, params("테스트유저1"));
-      if (rows[0].COUNT === 10) {
-        // 캐릭터가 열개가 넘으면 생성불가
-        res.send("cannot create characters anymore");
+      let [rows] = await query(q.select.PLAYER_WITH_NAME, params(name));
+      let id = rows[0].PLAYER_ID;
+      [rows] = [];
+      console.log("PLAYER_ID: ", id);
+      [rows] = await query(q.select.CHARACTER_COUNT, params(name));
+      console.log(`response: ${rows[0]}`);
+      let count = rows[0].COUNT || 0;
+      console.log("character count: ", count);
+      if (rows[0].COUNT && rows[0].COUNT === 10) {
+        // 캐릭터가 열개가 넘으면 생성불가, 102 전송
+        res.send("102");
       } else {
         console.log("createcharacter");
-        await connection
-          .promise()
-          .query(q.insert.CHARACTER, params(10000005, 1000000, "테스트캐릭타"));
-        res.send("created");
+        console.log(id * 10 + count, id, characterName);
+        await query(
+          q.insert.CHARACTER,
+          params(id * 10 + count, id, characterName)
+        );
+        // 100 전송(생성됨)
+        res.send("100");
       }
     }
+  })
+);
+
+router.post(
+  "/fetchcharacters",
+  $(async (req, res, next) => {
+    const { name } = req.body;
+    console.log(name);
+    let [rows] = await query(q.select.FETCH_CHARACTERS, params(name));
+    console.log(rows);
+    res.send(rows);
   })
 );
 

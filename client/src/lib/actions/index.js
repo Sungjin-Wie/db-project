@@ -3,6 +3,7 @@ import api from "../api";
 export const USER_LOGIN = "user/login";
 export const USER_LOGOUT = "user/logout";
 export const USER_SIGNUP = "user/signup";
+export const FETCH_CHARACTERS = "user/fetchCharacters";
 
 export const ERROR = "error";
 
@@ -68,6 +69,10 @@ export const userSignUp = (payload) => async (dispatch) => {
         alert("이름이 이미 존재합니다.");
         return dispatch({ type: ERROR });
       }
+      case 103: {
+        alert("정보를 전부 입력해주세요.");
+        return dispatch({ type: ERROR });
+      }
       default:
         return dispatch({ type: ERROR });
     }
@@ -76,8 +81,49 @@ export const userSignUp = (payload) => async (dispatch) => {
   }
 };
 
-export const userLogout = () => {
-  return { type: USER_LOGOUT };
+export const userLogout = (navigate) => async (dispatch) => {
+  alert("로그아웃되었습니다.");
+  navigate("/");
+  return dispatch({ type: USER_LOGOUT });
+};
+
+export const createCharacter =
+  ({ characterName, name, navigate }) =>
+  async (dispatch) => {
+    console.log(characterName, name);
+    if (characterName == "") {
+      alert("캐릭터 이름을 입력해주세요.");
+      return dispatch({ type: ERROR });
+    } else {
+      dispatch(setLoading());
+      const res = await api.call.post("/createcharacter", {
+        characterName,
+        name,
+      });
+      console.log(res.data);
+      dispatch(setLoadingComplete());
+      switch (res.data) {
+        case 100:
+          alert("생성되었습니다.");
+          return dispatch(fetchCharacters(name));
+        case 101:
+          alert("이미 존재하는 캐릭터명입니다.");
+          return dispatch({ type: ERROR });
+        case 102:
+          alert("캐릭터는 10개까지 생성 가능합니다.");
+          return dispatch({ type: ERROR });
+        default:
+          return dispatch({ type: ERROR });
+      }
+    }
+    return dispatch({ type: ERROR });
+  };
+
+export const fetchCharacters = (name) => async (dispatch) => {
+  console.log(name);
+  const res = await api.call.post("/fetchcharacters", { name });
+  console.log(res.data);
+  return dispatch({ type: FETCH_CHARACTERS, payload: res.data });
 };
 
 export const setLoading = () => {

@@ -11,8 +11,9 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userSignUp } from "../lib/actions";
+import { Loading } from "../components";
 
 function Copyright(props) {
   return (
@@ -37,6 +38,8 @@ const theme = createTheme();
 export default function SignUp() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const global = useSelector((state) => state.global);
+  const { loading } = global;
   const handleSubmit = (event) => {
     console.log(event);
     event.preventDefault();
@@ -47,7 +50,7 @@ export default function SignUp() {
         email: data.get("email"),
         password: data.get("password"),
         name: data.get("name"),
-        navigate
+        navigate,
       })
     );
   };
@@ -68,7 +71,7 @@ export default function SignUp() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign up
+            회원가입
           </Typography>
           <Box
             component="form"
@@ -109,14 +112,6 @@ export default function SignUp() {
                   autoComplete="new-password"
                 />
               </Grid>
-              {/* <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid> */}
             </Grid>
             <Button
               type="submit"
@@ -124,7 +119,7 @@ export default function SignUp() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign Up
+              {loading ? <Loading /> : "회원가입"}
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>

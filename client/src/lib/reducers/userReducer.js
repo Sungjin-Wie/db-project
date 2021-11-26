@@ -1,9 +1,16 @@
-import { USER_LOGIN, USER_LOGOUT, USER_SIGNUP, ERROR } from "../actions";
+import {
+  USER_LOGIN,
+  USER_LOGOUT,
+  USER_SIGNUP,
+  FETCH_CHARACTERS,
+  ERROR,
+} from "../actions";
 
 export const userState = {
   isLoggedIn: false,
   name: "",
   email: "",
+  characters: [],
 };
 
 const userReducer = (state = userState, action) => {
@@ -26,6 +33,13 @@ const userReducer = (state = userState, action) => {
       };
     case USER_SIGNUP:
       return { ...userState };
+    case FETCH_CHARACTERS: {
+      const { payload } = action;
+      return {
+        ...state,
+        characters: payload,
+      };
+    }
     case ERROR:
       return state;
     default:

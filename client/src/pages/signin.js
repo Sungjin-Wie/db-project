@@ -15,6 +15,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogin } from "../lib/actions";
+import { Loading } from "../components";
 
 function Copyright(props) {
   return (
@@ -40,6 +41,8 @@ export default function SignIn() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const global = useSelector((state) => state.global);
+  const { loading } = global;
   React.useEffect(() => {
     if (user.isLoggedIn) {
       navigate("/");
@@ -74,7 +77,7 @@ export default function SignIn() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            로그인
           </Typography>
           <Box
             component="form"
@@ -87,7 +90,7 @@ export default function SignIn() {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="이메일"
               name="email"
               autoComplete="email"
               autoFocus
@@ -97,7 +100,7 @@ export default function SignIn() {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="비밀번호"
               type="password"
               id="password"
               autoComplete="current-password"
@@ -112,7 +115,7 @@ export default function SignIn() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              {loading ? <Loading /> : "로그인"}
             </Button>
             <Grid container>
               <Grid item xs>

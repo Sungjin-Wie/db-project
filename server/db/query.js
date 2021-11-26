@@ -11,6 +11,11 @@ module.exports.insert = {
 };
 
 module.exports.select = {
+  PLAYER_WITH_NAME: `
+    SELECT PLAYER_ID
+    FROM PLAYERS
+    WHERE PLAYER_NAME=?
+  `,
   CHARACTER: `
     SELECT CHAR_NAME
     FROM CHARACTERS
@@ -49,10 +54,17 @@ module.exports.select = {
     ) P;
     `,
   SIGNUP_NAME: `
-      SELECT * FROM (
-        SELECT * FROM PLAYERS
-        WHERE 1=1 AND
-        PLAYER_NAME=?
-      ) P;
+    SELECT * FROM (
+      SELECT * FROM PLAYERS
+      WHERE 1=1 AND
+      PLAYER_NAME=?
+    ) P;
     `,
+  FETCH_CHARACTERS: `
+    SELECT * FROM CHARACTERS
+    WHERE PLAYER_ID=(
+      SELECT PLAYER_ID FROM PLAYERS
+      WHERE PLAYER_NAME=?
+    );
+  `,
 };
