@@ -16,8 +16,8 @@ export default function BasicTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   useEffect(() => {
-    api
-      .call("/ranking")
+    api.call
+      .get("/ranking")
       .then((res) => res.data)
       .then((data) => setData(data));
   }, []);
@@ -55,7 +55,7 @@ export default function BasicTable() {
                     </TableCell>
                     <TableCell align="right">{row.CHAR_NAME}</TableCell>
                     <TableCell align="right">{row.CHAR_LV}</TableCell>
-                    <TableCell align="right">{row.CHAR_EXP}</TableCell>
+                    <TableCell align="right">{`${row.CHAR_CUR_EXP}/${row.CHAR_EXP}`}</TableCell>
                   </TableRow>
                 );
               })}

@@ -1,29 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Oops } from "./";
-import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import CssBaseline from "@mui/material/CssBaseline";
-import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
-// import { Loading } from "../components";
 import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
-
-import TextField from "@mui/material/TextField";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { styled } from "@mui/system";
-import {
-  createCharacter,
-  deleteCharacter,
-  fetchCharacters,
-} from "../lib/actions";
+import { deleteCharacter, userGameStart } from "../lib/actions";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
+import { useNavigate } from "react-router-dom";
 
 const ProgressBar = styled(LinearProgress)(({ theme }) => ({
   margin: 5,
@@ -66,24 +53,28 @@ const StatBar = (props) => {
   );
 };
 
-export default CharacterCard = (props) => {
+const CharacterCard = (props) => {
   const {
     CHAR_NAME,
     CHAR_ID,
     CHAR_LV,
-    // CHAR_ATK,
-    // CHAR_DEF,
+    CHAR_ATK,
+    CHAR_DEF,
     CHAR_EXP,
     CHAR_CUR_EXP,
     CHAR_HP,
     CHAR_CUR_HP,
     CHAR_MP,
     CHAR_CUR_MP,
-    // CHAR_MONEY,
-    // PLAYER_ID,
+    CHAR_MONEY,
+    PLAYER_ID,
   } = props.props;
   const { name } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const handleGameStart = () =>
+    dispatch(userGameStart({ ...props.props }, navigate));
 
   const handleDeleteCharacter = (CHAR_ID, name) => {
     if (
@@ -93,6 +84,7 @@ export default CharacterCard = (props) => {
       dispatch(deleteCharacter(CHAR_ID, name));
     } else return;
   };
+
   return (
     <Card sx={{ width: 180, margin: 1 }}>
       <CardContent>
@@ -111,7 +103,9 @@ export default CharacterCard = (props) => {
         <StatBar current={CHAR_CUR_EXP} max={CHAR_EXP} color="#ffd400" />
       </CardContent>
       <CardActions>
-        <Button size="small">게임 시작</Button>
+        <Button onClick={() => handleGameStart()} size="small">
+          게임 시작
+        </Button>
         <Button
           onClick={() => handleDeleteCharacter(CHAR_ID, name)}
           size="small"
@@ -123,3 +117,5 @@ export default CharacterCard = (props) => {
     </Card>
   );
 };
+
+export default CharacterCard;

@@ -23,6 +23,9 @@ module.exports.insert = {
   INSERT INTO PLAYERS 
   VALUES(NULL, ?, ?, ?);
   `,
+  ITEM: `
+  INSERT INTO ITEMS VALUES(?, ?, ?);
+  `,
 };
 
 module.exports.select = {
@@ -46,14 +49,24 @@ module.exports.select = {
       );
     `,
   RANKING: `
-    SELECT CHAR_RANK, CHAR_NAME, CHAR_LV, CHAR_EXP 
+    SELECT CHAR_RANK, CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP 
     FROM (
-      SELECT CHAR_NAME, CHAR_LV, CHAR_EXP, 
+      SELECT CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP,
       @Rank := @Rank + 1 AS CHAR_RANK
       FROM CHARACTERS C, (SELECT @Rank := 0) R
       ORDER BY CHAR_LV DESC, CHAR_EXP DESC
       ) C
     WHERE CHAR_RANK <= 100;
+    `,
+  PLAYER_RANKING: `
+    SELECT CHAR_RANK, CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP , PLAYER_ID
+    FROM (
+      SELECT CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP, PLAYER_ID,
+      @Rank := @Rank + 1 AS CHAR_RANK
+      FROM CHARACTERS C, (SELECT @Rank := 0) R
+      ORDER BY CHAR_LV DESC, CHAR_EXP DESC
+      ) C
+    WHERE PLAYER_ID=?;
     `,
   SIGNIN_EMAIL: `
     SELECT * FROM (

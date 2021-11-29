@@ -1,4 +1,3 @@
-import "./App.css";
 import {
   BrowserRouter as Router,
   Navigate,
@@ -7,7 +6,7 @@ import {
 } from "react-router-dom";
 import { AppBar } from "./components";
 
-import { Main, Play, Ranking, Signin, Signup } from "./pages";
+import { Game, Main, Play, Ranking, Signin, Signup } from "./pages";
 import { styled } from "@mui/system";
 
 const Wrapper = styled("div")({
@@ -23,6 +22,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/play" element={<Play />} />
+          <Route path="/game" element={<Game />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />

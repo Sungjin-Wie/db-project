@@ -4,11 +4,14 @@ export const USER_LOGIN = "user/login";
 export const USER_LOGOUT = "user/logout";
 export const USER_SIGNUP = "user/signup";
 export const FETCH_CHARACTERS = "user/fetchCharacters";
+export const SELECT_CHARACTER = "user/selectCharacter";
 
 export const ERROR = "error";
 
 export const SET_LOADING = "global/setLoading";
 export const SET_LOADING_COMPLETE = "global/setLoadingComplete";
+
+export const GAME_MESSAGE = "game/message";
 
 export const userLogin = (payload) => async (dispatch) => {
   let res;
@@ -117,6 +120,17 @@ export const createCharacter =
       }
     }
   };
+
+export const userGameStart = (user, navigate) => async (dispatch) => {
+  console.log(user);
+  alert(`${user.CHAR_NAME}님, DB온라인에 접속합니다.`);
+  navigate("/game");
+  return dispatch({ type: SELECT_CHARACTER, payload: { ...user } });
+};
+
+export const addGameMessage = (message, newMessage) => {
+  return { type: GAME_MESSAGE, payload: { message, newMessage } };
+};
 
 export const fetchCharacters = (name) => async (dispatch) => {
   console.log(name);

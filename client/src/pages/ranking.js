@@ -1,5 +1,5 @@
 import { styled } from "@mui/system";
-import { Loading, RankingTable } from "../components";
+import { Loading, MyRankingTable, RankingTable } from "../components";
 import { useSelector } from "react-redux";
 
 const Wrapper = styled("div")({
@@ -13,6 +13,7 @@ const Header = styled("h1")({
 
 const Ranking = () => {
   const global = useSelector((state) => state.global);
+  const { isLoggedIn } = useSelector((state) => state.user);
   const { loading } = global;
   return (
     <Wrapper>
@@ -22,6 +23,14 @@ const Ranking = () => {
         <>
           <Header>명예의 전당</Header>
           <RankingTable />
+          {isLoggedIn ? (
+            <>
+              <Header>내 랭킹</Header>
+              <MyRankingTable />
+            </>
+          ) : (
+            <></>
+          )}
         </>
       )}
     </Wrapper>

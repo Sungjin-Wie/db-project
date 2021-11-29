@@ -6,10 +6,7 @@ require("dotenv").config();
 const salt = Number(process.env.SALT);
 const crypt = (password) => bcrypt.hashSync(password, salt);
 const q = require("../db/query");
-const query = async (...args) =>
-  args.length == 1
-    ? await connection.promise().query(...args)
-    : await connection.promise().query(args[0], args[1]);
+const query = async (...args) => await connection.promise().query(...args);
 
 const $ = (asyncFn) => async (req, res, next) =>
   await asyncFn(req, res, next).catch(next);
@@ -25,15 +22,18 @@ router.get(
 );
 
 // router.get(
-//   "/test",
+//   "/initItem",
 //   $(async (req, res, next) => {
-//     await connection
-//       .promise()
-//       .query(
-//         q.insert.PLAYER,
-//         params(crypt("password1!"), "이름하야2", "tmdwls1203@test.com2")
-//       );
-//     res.send("created");
+//     const items = [
+//       params(1000, "달팽이 껍질", 5),
+//       params(1001, "슬라임의 방울", 10),
+//       params(1002, "버섯의 갓", 20),
+//       params(2000, "HP 회복물약", 10),
+//       params(2001, "MP 회복물약", 20),
+//     ];
+//     await Promise.all(items.map((param) => query(q.insert.ITEM, param)));
+//     console.log("finished");
+//     res.send("finished");
 //   })
 // );
 
@@ -57,7 +57,7 @@ router.post(
   "/signin",
   $(async (req, res, next) => {
     console.log("/api/signin");
-    console.log(req.body);
+    console.log(req.body.email);
     const { email, password } = req.body;
     if (email == "") {
       // 아이디 미입력시 101 반환
@@ -135,6 +135,20 @@ router.get(
     console.log("ranking");
     const [rows] = await query(q.select.RANKING);
     console.log(rows.length);
+    res.send(rows);
+  })
+);
+router.get(
+  "/myranking",
+  $(async (req, res, next) => {
+    const name = req.query.name;
+    console.log(name);
+    console.log("myranking");
+    let [rows] = await query(q.select.PLAYER_WITH_NAME, params(name));
+    let id = rows[0].PLAYER_ID;
+    console.log(`id=${id}`);
+    [rows] = [];
+    [rows] = await query(q.select.PLAYER_RANKING, params(id));
     res.send(rows);
   })
 );

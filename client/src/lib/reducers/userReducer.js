@@ -3,6 +3,7 @@ import {
   USER_LOGOUT,
   USER_SIGNUP,
   FETCH_CHARACTERS,
+  SELECT_CHARACTER,
   ERROR,
 } from "../actions";
 
@@ -11,6 +12,8 @@ export const userState = {
   name: "",
   email: "",
   characters: [],
+  currentCharacter: {},
+  message: ["", "", "", "", ""],
 };
 
 const userReducer = (state = userState, action) => {
@@ -38,6 +41,13 @@ const userReducer = (state = userState, action) => {
       return {
         ...state,
         characters: payload,
+      };
+    }
+    case SELECT_CHARACTER: {
+      const { payload } = action;
+      return {
+        ...state,
+        currentCharacter: payload,
       };
     }
     case ERROR:
