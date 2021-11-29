@@ -134,7 +134,7 @@ router.get(
   $(async (req, res, next) => {
     console.log("ranking");
     const [rows] = await query(q.select.RANKING);
-    console.log(rows);
+    console.log(rows.length);
     res.send(rows);
   })
 );
@@ -184,8 +184,35 @@ router.post(
     const { name } = req.body;
     console.log(name);
     let [rows] = await query(q.select.FETCH_CHARACTERS, params(name));
-    console.log(rows);
+    console.log(rows.length);
     res.send(rows);
+  })
+);
+
+router.post(
+  "/deletecharacter",
+  $(async (req, res, next) => {
+    const { id } = req.body;
+    let [rows] = await query(q.delete.CHARACTER, params(id));
+    let PLAYER_ID = Math.floor(id / 10);
+    [rows] = [];
+    console.log(`id: ${PLAYER_ID}`);
+    let response = await query(
+      q.select.FETCH_CHARACTERS_IN_RANK,
+      params(PLAYER_ID)
+    );
+    console.log(response[0]);
+    await Promise.all(
+      response[0].map((char) => {
+        const { CHAR_ID, CHAR_NAME, CHAR_RANK } = char;
+        console.log(CHAR_ID, CHAR_NAME, CHAR_RANK);
+        return query(
+          q.update.SORT_AFTER_DELETE,
+          params(PLAYER_ID * 10 + CHAR_RANK, CHAR_NAME)
+        );
+      })
+    );
+    res.send("100");
   })
 );
 

@@ -1,3 +1,18 @@
+module.exports.update = {
+  SORT_AFTER_DELETE: `
+  UPDATE CHARACTERS
+  SET CHAR_ID=?
+  WHERE CHAR_NAME=?
+  `,
+};
+
+module.exports.delete = {
+  CHARACTER: `
+    DELETE FROM CHARACTERS
+    WHERE CHAR_ID = ?;
+  `,
+};
+
 module.exports.insert = {
   CHARACTER: `
   INSERT INTO CHARACTERS 
@@ -37,7 +52,8 @@ module.exports.select = {
       @Rank := @Rank + 1 AS CHAR_RANK
       FROM CHARACTERS C, (SELECT @Rank := 0) R
       ORDER BY CHAR_LV DESC, CHAR_EXP DESC
-      ) C;
+      ) C
+    WHERE CHAR_RANK <= 100;
     `,
   SIGNIN_EMAIL: `
     SELECT * FROM (
@@ -67,4 +83,11 @@ module.exports.select = {
       WHERE PLAYER_NAME=?
     );
   `,
+  FETCH_CHARACTERS_IN_RANK: `
+    SELECT CHAR_ID, CHAR_NAME,     
+    @Rank := @Rank + 1 AS CHAR_RANK
+    FROM CHARACTERS C, (SELECT @Rank := -1) R  
+    WHERE PLAYER_ID=?   
+    ORDER BY CHAR_ID ASC;
+    `,
 };

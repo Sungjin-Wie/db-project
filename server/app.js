@@ -8,13 +8,14 @@ var apiRouter = require("./routes/api");
 
 var app = express();
 app.all("*", (req, res, next) => {
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  console.log(ip);
   let protocol = req.headers["x-forwarded-proto"] || req.protocol;
   if (req.hostname == "114.205.146.154")
     res.redirect(`https://db-online.kro.kr/`);
   else if (protocol == "https") {
     next();
   } else {
-    console.log("http!!");
     console.log(`${req.hostname}`);
     console.log(`${req.url}`);
     let from = `${protocol}://${req.hostname}${req.url}`;
