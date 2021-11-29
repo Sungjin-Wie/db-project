@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { AppBar } from "./components";
 
-import { Main, Play, Ranking, Signin, Signup, Oops } from "./pages";
+import { Main, Play, Ranking, Signin, Signup } from "./pages";
 import { styled } from "@mui/system";
 
 const Wrapper = styled("div")({

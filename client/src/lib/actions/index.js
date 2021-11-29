@@ -116,7 +116,6 @@ export const createCharacter =
           return dispatch({ type: ERROR });
       }
     }
-    return dispatch({ type: ERROR });
   };
 
 export const fetchCharacters = (name) => async (dispatch) => {
@@ -124,6 +123,14 @@ export const fetchCharacters = (name) => async (dispatch) => {
   const res = await api.call.post("/fetchcharacters", { name });
   console.log(res.data);
   return dispatch({ type: FETCH_CHARACTERS, payload: res.data });
+};
+
+export const deleteCharacter = (CHAR_ID, name) => async (dispatch) => {
+  dispatch(setLoading());
+  await api.call.post("/deletecharacter", { id: CHAR_ID });
+  alert("캐릭터가 삭제되었습니다.");
+  dispatch(setLoadingComplete());
+  return dispatch(fetchCharacters(name));
 };
 
 export const setLoading = () => {

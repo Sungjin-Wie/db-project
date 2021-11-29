@@ -3,7 +3,6 @@ import { Route } from "react-router";
 
 export default (
   <Route>
-    <Route path="/" />
     <Route path="/play" />
     <Route path="/ranking" />
     <Route path="/signin" />

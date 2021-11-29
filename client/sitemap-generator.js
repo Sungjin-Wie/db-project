@@ -5,10 +5,8 @@ require("babel-register")({
 const router = require("./sitemap-route.js").default;
 const Sitemap = require("react-router-sitemap").default;
 
-function generateSitemap() {
-  return new Sitemap(router)
-    .build("https://db-online.kro.kr")
-    .save("./public/sitemap.xml");
-}
+const generateSitemap = (path) =>
+  new Sitemap(router).build("https://db-online.kro.kr").save(path);
 
-generateSitemap();
+generateSitemap("./public/sitemap.xml");
+generateSitemap("./public/sitemap-index.xml");
