@@ -6,7 +6,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { styled } from "@mui/system";
-import { addGameMessage, fetchCharacters } from "../lib/actions";
+import { addGameMessage, fetchCharacters, fetchCharData } from "../lib/actions";
 import { Typography } from "@mui/material";
 import {
   Paper,
@@ -19,6 +19,7 @@ import {
   TableContainer,
   TableRow,
 } from "@mui/material";
+import { GameScreen, Inventory, Stats } from "../components";
 
 const theme = createTheme();
 
@@ -50,6 +51,7 @@ const Game = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { name, isLoggedIn, characters } = useSelector((state) => state.user);
+  const { message, currentCharacter } = useSelector((state) => state.game);
   // const { loading } = useSelector((state) => state.global);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   useEffect(() => {
@@ -57,16 +59,13 @@ const Game = () => {
       alert("로그인이 필요합니다.");
       navigate("/signin");
     } else {
-      if (message[0] === "")
-        dispatch(addGameMessage(message, "DB온라인을 시작합니다."));
       setInterval(() => {
         setIsMobile(window.innerWidth <= 900);
       }, 1000);
     }
   }, []);
-
-  const { message } = useSelector((state) => state.game);
-  const testMessage = () => dispatch(addGameMessage(message, Math.random()));
+  const game = useSelector((state) => state.game);
+  const testMessage = () => console.log(game);
 
   return (
     <>
@@ -92,7 +91,15 @@ const Game = () => {
                 </Grid>
                 <Grid item md={4} lg={4}>
                   <Typography variant="h5">인벤토리</Typography>
-                  <Paper elevation={3}>ㅇ</Paper>
+                  <Inventory />
+                </Grid>
+                <Grid item md={8} lg={8}>
+                  <Typography variant="h5">게임</Typography>
+                  <GameScreen />
+                </Grid>
+                <Grid item md={4} lg={4}>
+                  <Typography variant="h5">스탯 창</Typography>
+                  <Stats />
                 </Grid>
               </Grid>
             </Box>

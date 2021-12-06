@@ -3,3 +3,7 @@ export { default as RankingTable } from "./table";
 export { default as Loading } from "./loading";
 export { default as CharacterCard } from "./charactercard";
 export { default as MyRankingTable } from "./myranking";
+export { default as Inventory } from "./inventory";
+export { default as GameScreen } from "./gamescreen";
+export { default as Stats } from "./stats";
+export { default as StatBar } from "./statbar";

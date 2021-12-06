@@ -11,7 +11,9 @@ export const ERROR = "error";
 export const SET_LOADING = "global/setLoading";
 export const SET_LOADING_COMPLETE = "global/setLoadingComplete";
 
+export const FETCH_CHARACTER_DATA = "game/fetchCharData";
 export const GAME_MESSAGE = "game/message";
+export const GAME_SET_LOCATION = "game/setLocation";
 
 export const userLogin = (payload) => async (dispatch) => {
   let res;
@@ -121,15 +123,40 @@ export const createCharacter =
     }
   };
 
-export const userGameStart = (user, navigate) => async (dispatch) => {
-  console.log(user);
-  alert(`${user.CHAR_NAME}님, DB온라인에 접속합니다.`);
+export const userGameStart = (char, navigate) => async (dispatch) => {
+  console.log(char);
+  let res = await api.call.get("/playerInfo", { params: { id: char.CHAR_ID } });
+  console.log(res.data);
+  let payload = { stats: { ...char }, inventory: { ...res.data } };
+  res = await api.call.get("/mobs");
+  console.log(res.data);
+  payload = { ...payload, mobs: res.data };
+  res = await api.call.get("/items");
+  console.log(res.data);
+  payload = { ...payload, items: res.data };
+  dispatch({
+    type: FETCH_CHARACTER_DATA,
+    payload,
+  });
+  alert(`${char.CHAR_NAME}님, DB온라인에 접속합니다.`);
   navigate("/game");
-  return dispatch({ type: SELECT_CHARACTER, payload: { ...user } });
+  return dispatch({ type: SELECT_CHARACTER, payload: { ...char } });
 };
 
-export const addGameMessage = (message, newMessage) => {
-  return { type: GAME_MESSAGE, payload: { message, newMessage } };
+// export const fetchCharData = (CHAR_ID) => async (dispatch) => {
+//   console.log(CHAR_ID);
+//   const res = await api.call.get("/playerInfo", { params: { id: CHAR_ID } });
+//   console.log(res);
+//   return dispatch({ type: FETCH_CHARACTER_DATA, payload: { ...res.data } });
+// };
+
+export const addGameMessage = (newMessage) => {
+  return { type: GAME_MESSAGE, payload: { newMessage } };
+};
+
+export const setLocation = (location, message) => (dispatch) => {
+  dispatch(addGameMessage(message));
+  return dispatch({ type: GAME_SET_LOCATION, payload: location });
 };
 
 export const fetchCharacters = (name) => async (dispatch) => {

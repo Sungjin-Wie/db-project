@@ -11,47 +11,7 @@ import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import { useNavigate } from "react-router-dom";
-
-const ProgressBar = styled(LinearProgress)(({ theme }) => ({
-  margin: 5,
-  height: 20,
-  borderRadius: 5,
-  [`&.${linearProgressClasses.colorPrimary}`]: {
-    backgroundColor:
-      theme.palette.grey[theme.palette.mode === "light" ? 200 : 800],
-  },
-  [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
-    backgroundColor: "#dddddd",
-  },
-}));
-
-const StatBar = (props) => {
-  const { current, max, color } = props;
-
-  return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Box sx={{ width: "100%" }}>
-        <ProgressBar
-          variant="determinate"
-          value={(current / max) * 100}
-          sx={{
-            [`& .${linearProgressClasses.bar}`]: {
-              borderRadius: 5,
-              backgroundColor: color,
-            },
-          }}
-        />
-      </Box>
-      <Box sx={{ position: "absolute", ml: 6, alignItems: "center" }}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-        >{`${current}/${max}`}</Typography>
-      </Box>
-    </Box>
-  );
-};
+import { StatBar } from "./";
 
 const CharacterCard = (props) => {
   const {
@@ -73,8 +33,9 @@ const CharacterCard = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleGameStart = () =>
+  const handleGameStart = () => {
     dispatch(userGameStart({ ...props.props }, navigate));
+  };
 
   const handleDeleteCharacter = (CHAR_ID, name) => {
     if (
@@ -98,9 +59,9 @@ const CharacterCard = (props) => {
         >
           {`Lv. ${CHAR_LV}`}
         </Typography>
-        <StatBar current={CHAR_CUR_HP} max={CHAR_HP} color="#dc143c" />
-        <StatBar current={CHAR_CUR_MP} max={CHAR_MP} color="#1a90ff" />
-        <StatBar current={CHAR_CUR_EXP} max={CHAR_EXP} color="#ffd400" />
+        <StatBar current={CHAR_CUR_HP} max={CHAR_HP} color="#dc143c" ml={6} />
+        <StatBar current={CHAR_CUR_MP} max={CHAR_MP} color="#1a90ff" ml={6} />
+        <StatBar current={CHAR_CUR_EXP} max={CHAR_EXP} color="#ffd400" ml={6} />
       </CardContent>
       <CardActions>
         <Button onClick={() => handleGameStart()} size="small">

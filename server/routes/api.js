@@ -22,6 +22,20 @@ router.get(
 );
 
 // router.get(
+//   "/initMobs",
+//   $(async (req, res, next) => {
+//     const mobs = [
+//       params(0, "달팽이", 8, 2, 1, 3, 1000, 40),
+//       params(1, "슬라임", 20, 4, 3, 7, 1001, 40),
+//       params(2, "버섯", 40, 10, 5, 10, 1002, 40),
+//     ];
+//     await Promise.all(mobs.map((param) => query(q.insert.MOB, param)));
+//     console.log("finished");
+//     res.send("finished");
+//   })
+// );
+
+// router.get(
 //   "/initItem",
 //   $(async (req, res, next) => {
 //     const items = [
@@ -36,6 +50,52 @@ router.get(
 //     res.send("finished");
 //   })
 // );
+
+// router.get(
+//   "/initInven",
+//   $(async (req, res, next) => {
+//     const items = [
+//       params(10000040, 1000, "달팽이 껍질", 3),
+//       params(10000040, 1001, "슬라임의 방울", 4),
+//       params(10000040, 1002, "버섯의 갓", 2),
+//       params(10000040, 2000, "HP 회복물약", 4),
+//       params(10000040, 2001, "MP 회복물약", 5),
+//     ];
+//     await Promise.all(items.map((param) => query(q.insert.INVENTORY, param)));
+//     console.log("finished");
+//     res.send("finished");
+//   })
+// );
+
+router.get(
+  "/mobs",
+  $(async (req, res, next) => {
+    let [rows] = await query(q.select.MOBS);
+    console.log(rows);
+    res.send(rows);
+  })
+);
+
+router.get(
+  "/items",
+  $(async (req, res, next) => {
+    let [rows] = await query(q.select.ITEMS);
+    console.log(rows);
+    res.send(rows);
+  })
+);
+
+router.get(
+  "/playerInfo",
+  $(async (req, res, next) => {
+    let CHAR_ID = req.query.id;
+    console.log(CHAR_ID);
+    let [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+    let data = { inventory: rows };
+    console.log(data);
+    res.send(data);
+  })
+);
 
 router.get(
   "/all",
@@ -207,9 +267,8 @@ router.post(
   "/deletecharacter",
   $(async (req, res, next) => {
     const { id } = req.body;
-    let [rows] = await query(q.delete.CHARACTER, params(id));
+    await query(q.delete.CHARACTER, params(id));
     let PLAYER_ID = Math.floor(id / 10);
-    [rows] = [];
     console.log(`id: ${PLAYER_ID}`);
     let response = await query(
       q.select.FETCH_CHARACTERS_IN_RANK,
