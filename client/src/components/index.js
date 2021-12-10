@@ -7,3 +7,6 @@ export { default as Inventory } from "./inventory";
 export { default as GameScreen } from "./gamescreen";
 export { default as Stats } from "./stats";
 export { default as StatBar } from "./statbar";
+export { default as BattleCard } from "./battlecard";
+export { default as Sell } from "./sell";
+export { default as Buy } from "./buy";

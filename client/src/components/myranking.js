@@ -23,7 +23,7 @@ export default function BasicTable() {
       .then((data) => setData(data));
   }, []);
   return (
-    <>
+    <Paper sx={{ mb: 5 }}>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 400 }} aria-label="simple table">
           <TableHead>
@@ -65,6 +65,6 @@ export default function BasicTable() {
           <Typography>캐릭터가 없습니다.</Typography>
         </Box>
       )}
-    </>
+    </Paper>
   );
 }

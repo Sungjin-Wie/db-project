@@ -76,12 +76,158 @@ router.get(
   })
 );
 
+router.post(
+  "/postbattle",
+  $(async (req, res, next) => {
+    console.log(req.body);
+    let {
+      CHAR_ID,
+      CHAR_NAME,
+      CHAR_CUR_HP,
+      CHAR_HP,
+      CHAR_CUR_MP,
+      CHAR_MP,
+      CHAR_CUR_EXP,
+      CHAR_EXP,
+      CHAR_ATK,
+      CHAR_DEF,
+      CHAR_LV,
+      MOB_EXP,
+      ITEM_ID,
+      loot,
+    } = req.body;
+
+    let postCharacter = {
+      CHAR_ID,
+      CHAR_NAME,
+      CHAR_CUR_HP,
+      CHAR_HP,
+      CHAR_CUR_MP,
+      CHAR_MP,
+      CHAR_CUR_EXP,
+      CHAR_EXP,
+      CHAR_ATK,
+      CHAR_DEF,
+      CHAR_LV,
+    };
+    let [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+    console.log(rows);
+    let inventory = rows;
+
+    if (loot) {
+      // loot가 true일시 인벤토리 업데이트 쿼리문 실행
+      console.log(rows.length);
+      let idx = -1;
+      for (const item in inventory)
+        if (ITEM_ID == inventory[item].ITEM_ID) {
+          idx = item;
+          break;
+        }
+
+      console.log(idx);
+      //idx가 0 이상이면 update, -1이면 새로 삽입
+      if (idx >= 0) {
+        let qty = inventory[idx].ITEM_QTY + 1;
+        inventory[idx].ITEM_QTY = qty;
+        await query(q.update.ITEM, params(qty, CHAR_ID, ITEM_ID));
+      } else {
+        let qty = 1;
+        let [rows] = await query(q.select.ITEM, params(ITEM_ID));
+        console.log(rows);
+        let ITEM_NAME = rows[0].ITEM_NAME;
+        await query(
+          q.insert.INVENTORY,
+          params(CHAR_ID, ITEM_ID, ITEM_NAME, qty)
+        );
+        [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+        inventory = rows;
+      }
+    }
+
+    let POST_EXP = CHAR_CUR_EXP + MOB_EXP;
+    if (POST_EXP >= CHAR_EXP) {
+      // 레벨업 구현 - 레벨업시 HP/MP 회복 및 스탯 증가
+      await query(
+        q.update.LEVEL_UP,
+        params(
+          CHAR_HP + 5,
+          CHAR_HP + 5,
+          CHAR_MP + 1,
+          CHAR_MP + 1,
+          POST_EXP - CHAR_EXP,
+          CHAR_EXP + 10,
+          CHAR_LV + 1,
+          CHAR_ATK + 1,
+          CHAR_DEF + 1,
+          CHAR_ID
+        )
+      );
+      let currentCharacter = {
+        ...postCharacter,
+        CHAR_CUR_HP: CHAR_HP + 5,
+        CHAR_HP: CHAR_HP + 5,
+        CHAR_CUR_MP: CHAR_MP + 1,
+        CHAR_MP: CHAR_MP + 1,
+        CHAR_CUR_EXP: POST_EXP - CHAR_EXP,
+        CHAR_EXP: CHAR_EXP + 10,
+        CHAR_ATK: CHAR_ATK + 1,
+        CHAR_DEF: CHAR_DEF + 1,
+        CHAR_LV: CHAR_LV + 1,
+      };
+      console.log(currentCharacter);
+      res.send({ currentCharacter, inventory });
+    } else {
+      // POST_BATTLE 쿼리문
+      await query(
+        q.update.POST_BATTLE,
+        params(CHAR_CUR_HP, CHAR_CUR_MP, POST_EXP, CHAR_ID)
+      );
+      let currentCharacter = {
+        ...postCharacter,
+        CHAR_CUR_EXP: CHAR_CUR_EXP + MOB_EXP,
+      };
+      res.send({ currentCharacter, inventory });
+    }
+  })
+);
+
 router.get(
   "/items",
   $(async (req, res, next) => {
     let [rows] = await query(q.select.ITEMS);
     console.log(rows);
     res.send(rows);
+  })
+);
+router.get(
+  "/item",
+  $(async (req, res, next) => {
+    let id = req.query.id;
+    console.log(id);
+    let [rows] = await query(q.select.ITEM, params(id));
+    console.log(rows);
+    res.send(rows);
+  })
+);
+
+router.get(
+  "/trade",
+  $(async (req, res, next) => {
+    let { id, qty, action, value, char } = req.query;
+    //sell, buy에 따라 다르게
+    if (action == "sell") {
+      // 캐릭터 자금 업데이트
+      let [rows] = await query(q.select.CHAR_WITH_ID, params(char));
+      console.log(rows[0]);
+      let money = Number(rows[0].CHAR_MONEY) + value;
+      let currentCharacter = { ...rows[0], CHAR_MONEY: money };
+      console.log(currentCharacter);
+      // 인벤토리 수량 업데이트
+      res.send(currentCharacter);
+    } else {
+      // 캐릭터 자금 업데이트
+      // 인벤토리 수량 업데이트
+    }
   })
 );
 
@@ -101,15 +247,9 @@ router.get(
   "/all",
   $(async (req, res, next) => {
     console.log("/api/all");
-    const sql1 = "SELECT * FROM PLAYERS WHERE 1=?;";
-    const sql2 = "SELECT CHAR_ID, PLAYER_ID, CHAR_NAME FROM CHARACTERS;";
-    let data = {};
-    let response = await query(sql1, [1]);
-    data.players = response[0];
-    response = await query(sql2);
-    data.characters = response[0];
-    console.log(data);
-    res.send(data);
+    let [rows] = await query(q.select.RANKING);
+    console.log(rows);
+    res.send(rows);
   })
 );
 
@@ -209,6 +349,7 @@ router.get(
     console.log(`id=${id}`);
     [rows] = [];
     [rows] = await query(q.select.PLAYER_RANKING, params(id));
+    console.log(rows);
     res.send(rows);
   })
 );
@@ -220,33 +361,48 @@ router.post(
     console.log("searchcharacter");
     console.log(req.body);
     const { characterName, name } = req.body;
-    let [rows] = await query(q.select.CHARACTER, params(characterName));
-    console.log(rows.length);
-    if (rows.length === 1) {
-      //이미 있는 캐릭터명일 경우 101 전송
-      console.log("already exists");
-      res.send("101");
+    var getTextLength = function (str) {
+      var len = 0;
+      for (var i = 0; i < str.length; i++) {
+        if (escape(str.charAt(i)).length == 6) {
+          len++;
+        }
+        len++;
+      }
+      return len;
+    };
+    if (getTextLength(characterName) > 12) {
+      //닉네임이 너무 긴 경우
+      res.send("103");
     } else {
-      let [rows] = await query(q.select.PLAYER_WITH_NAME, params(name));
-      let id = rows[0].PLAYER_ID;
-      [rows] = [];
-      console.log("PLAYER_ID: ", id);
-      [rows] = await query(q.select.CHARACTER_COUNT, params(name));
-      console.log(`response: ${rows[0]}`);
-      let count = rows[0].COUNT || 0;
-      console.log("character count: ", count);
-      if (rows[0].COUNT && rows[0].COUNT === 10) {
-        // 캐릭터가 열개가 넘으면 생성불가, 102 전송
-        res.send("102");
+      let [rows] = await query(q.select.CHARACTER, params(characterName));
+      console.log(rows.length);
+      if (rows.length === 1) {
+        //이미 있는 캐릭터명일 경우 101 전송
+        console.log("already exists");
+        res.send("101");
       } else {
-        console.log("createcharacter");
-        console.log(id * 10 + count, id, characterName);
-        await query(
-          q.insert.CHARACTER,
-          params(id * 10 + count, id, characterName)
-        );
-        // 100 전송(생성됨)
-        res.send("100");
+        let [rows] = await query(q.select.PLAYER_WITH_NAME, params(name));
+        let id = rows[0].PLAYER_ID;
+        [rows] = [];
+        console.log("PLAYER_ID: ", id);
+        [rows] = await query(q.select.CHARACTER_COUNT, params(name));
+        console.log(`response: ${rows[0]}`);
+        let count = rows[0].COUNT || 0;
+        console.log("character count: ", count);
+        if (rows[0].COUNT && rows[0].COUNT === 10) {
+          // 캐릭터가 열개가 넘으면 생성불가, 102 전송
+          res.send("102");
+        } else {
+          console.log("createcharacter");
+          console.log(id * 10 + count, id, characterName);
+          await query(
+            q.insert.CHARACTER,
+            params(id * 10 + count, id, characterName)
+          );
+          // 100 전송(생성됨)
+          res.send("100");
+        }
       }
     }
   })

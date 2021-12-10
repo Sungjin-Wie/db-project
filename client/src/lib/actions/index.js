@@ -1,3 +1,4 @@
+import { fabClasses } from "@mui/material";
 import api from "../api";
 
 export const USER_LOGIN = "user/login";
@@ -5,6 +6,7 @@ export const USER_LOGOUT = "user/logout";
 export const USER_SIGNUP = "user/signup";
 export const FETCH_CHARACTERS = "user/fetchCharacters";
 export const SELECT_CHARACTER = "user/selectCharacter";
+export const POST_SELECT_CHARACTER = "user/postSelectCharacter";
 
 export const ERROR = "error";
 
@@ -14,6 +16,11 @@ export const SET_LOADING_COMPLETE = "global/setLoadingComplete";
 export const FETCH_CHARACTER_DATA = "game/fetchCharData";
 export const GAME_MESSAGE = "game/message";
 export const GAME_SET_LOCATION = "game/setLocation";
+export const GAME_BATTLE_START = "game/battleStart";
+export const GAME_HANDLE_ATTACK = "game/handleAttack";
+export const GAME_BATTLE_TURN_POST = "game/battleTurnPost";
+export const POST_BATTLE_CHARACTER = "game/postBattleCharacter";
+export const POST_SELL = "game/postSell";
 
 export const userLogin = (payload) => async (dispatch) => {
   let res;
@@ -117,6 +124,8 @@ export const createCharacter =
         case 102:
           alert("캐릭터는 10개까지 생성 가능합니다.");
           return dispatch({ type: ERROR });
+        case 103:
+          return dispatch({ type: ERROR });
         default:
           return dispatch({ type: ERROR });
       }
@@ -143,6 +152,88 @@ export const userGameStart = (char, navigate) => async (dispatch) => {
   return dispatch({ type: SELECT_CHARACTER, payload: { ...char } });
 };
 
+export const userBattleStart = (currentBattleMob) => (dispatch) => {
+  dispatch(setLocation(3, "전투를 시작합니다."));
+  return dispatch({
+    type: GAME_BATTLE_START,
+    payload: { ...currentBattleMob },
+  });
+};
+
+export const userAttack =
+  (currentCharacter, currentBattleMob) => async (dispatch) => {
+    const { CHAR_ATK, CHAR_DEF, CHAR_CUR_HP, CHAR_NAME, CHAR_ID } =
+      currentCharacter;
+    const { MOB_ATK, MOB_DEF, MOB_CUR_HP, MOB_NAME, DROP_RATE, ITEM_ID } =
+      currentBattleMob;
+    let userDamageToMob = CHAR_ATK - MOB_DEF;
+    if (userDamageToMob <= 0) userDamageToMob = 1;
+    dispatch(
+      addGameMessage(
+        `${CHAR_NAME}의 공격으로 ${MOB_NAME}에게 ${userDamageToMob}의 데미지!`
+      )
+    );
+    currentBattleMob.MOB_CUR_HP = MOB_CUR_HP - userDamageToMob;
+    if (currentBattleMob.MOB_CUR_HP <= 0) {
+      // 전투에서 승리 - 메시지 출력, 다시 사냥터 맵으로 return dispatch
+      // 전리품 확률 획득 반영 (ITEM_ID도 보내면서 loot값을 보냄)
+      let loot = Math.random() * 100 < DROP_RATE;
+      // 서버에 바뀐 데이터 반영 필요
+      let data = { ...currentCharacter, ...currentBattleMob, loot };
+      let res = await api.call.post("/postbattle", data);
+      console.log(res.data);
+      let postInventory = res.data.inventory;
+      let postCharacter = res.data.currentCharacter;
+      dispatch({
+        type: POST_BATTLE_CHARACTER,
+        payload: { currentCharacter: postCharacter, inventory: postInventory },
+      });
+      dispatch({
+        type: POST_SELECT_CHARACTER,
+        payload: { currentCharacter: postCharacter },
+      });
+
+      return dispatch(
+        setLocation(1, `전투에서 이겼습니다! 사냥터로 돌아갑니다.`)
+      );
+    }
+    let mobDamageToUser = MOB_ATK - CHAR_DEF;
+    if (mobDamageToUser <= 0) mobDamageToUser = 1;
+    dispatch(
+      addGameMessage(
+        `${MOB_NAME}의 공격으로 ${CHAR_NAME}에게 ${mobDamageToUser}의 데미지!`
+      )
+    );
+    currentCharacter.CHAR_CUR_HP = CHAR_CUR_HP - mobDamageToUser;
+    if (currentCharacter.CHAR_CUR_HP <= 0) {
+      // 전투에서 패배 - 메시지 출력, HP MP 회복후 마을로 return dispatch
+      currentCharacter.CHAR_CUR_HP = 50;
+      currentCharacter.CHAR_CUR_MP = 5;
+      currentCharacter.CHAR_CUR_EXP = parseInt(
+        currentCharacter.CHAR_CUR_EXP / 2
+      );
+      currentBattleMob.MOB_EXP = 0;
+      let data = { ...currentCharacter, ...currentBattleMob, loot: false };
+      let res = await api.call.post("/postbattle", data);
+      console.log(res.data);
+      let postInventory = res.data.inventory;
+      let postCharacter = res.data.currentCharacter;
+      dispatch({
+        type: POST_BATTLE_CHARACTER,
+        payload: { currentCharacter: postCharacter, inventory: postInventory },
+      });
+      // 서버에 바뀐 데이터 반영 필요, currentCharacter에도 반영
+      return dispatch(
+        setLocation(0, `전투에서 패배했습니다. 마을로 돌아갑니다.`)
+      );
+    }
+    // 전투가 끝나지 않았을 경우 턴을 종료하면서 바뀐 HP/MP 반영
+    return dispatch({
+      type: GAME_BATTLE_TURN_POST,
+      payload: { currentCharacter, currentBattleMob },
+    });
+  };
+
 // export const fetchCharData = (CHAR_ID) => async (dispatch) => {
 //   console.log(CHAR_ID);
 //   const res = await api.call.get("/playerInfo", { params: { id: CHAR_ID } });
@@ -155,9 +246,10 @@ export const addGameMessage = (newMessage) => {
 };
 
 export const setLocation = (location, message) => (dispatch) => {
-  dispatch(addGameMessage(message));
+  if (message != "") dispatch(addGameMessage(message));
   return dispatch({ type: GAME_SET_LOCATION, payload: location });
 };
+// 0 - 마을, 1 - 사냥터, 2 - 상점, 3 - 전투
 
 export const fetchCharacters = (name) => async (dispatch) => {
   console.log(name);

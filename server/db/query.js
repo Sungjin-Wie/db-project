@@ -4,6 +4,37 @@ module.exports.update = {
   SET CHAR_ID=?
   WHERE CHAR_NAME=?
   `,
+  POST_BATTLE: `
+  UPDATE CHARACTERS
+  SET CHAR_CUR_HP=?,
+  CHAR_CUR_MP=?,
+  CHAR_CUR_EXP=?
+  WHERE CHAR_ID=?;
+  `,
+  LEVEL_UP: `
+  UPDATE CHARACTERS
+  SET CHAR_CUR_HP=?,
+  CHAR_HP=?,
+  CHAR_CUR_MP=?,
+  CHAR_MP=?,
+  CHAR_CUR_EXP=?,
+  CHAR_EXP=?,
+  CHAR_LV=?,
+  CHAR_ATK=?,
+  CHAR_DEF=?
+  WHERE CHAR_ID=?;
+  `,
+  ITEM: `
+  UPDATE INVENTORY
+  SET ITEM_QTY=?
+  WHERE CHAR_ID=?
+  AND ITEM_ID=?;
+  `,
+  ITEM_SELL_CHARACTER: `
+  UPDATE CHARACTER
+  SET CHAR_MONEY=?
+  WHERE CHAR_ID=?;
+  `,
 };
 
 module.exports.delete = {
@@ -46,7 +77,12 @@ module.exports.select = {
   SELECT CHAR_NAME
   FROM CHARACTERS
   WHERE CHAR_NAME=?;
-    `,
+  `,
+  CHAR_WITH_ID: `
+  SELECT *
+  FROM CHARACTERS
+  WHERE CHAR_ID=?;
+  `,
   CHARACTER_COUNT: `
   SELECT COUNT(*) AS COUNT
   FROM CHARACTERS
@@ -55,14 +91,14 @@ module.exports.select = {
     FROM PLAYERS
     WHERE PLAYER_NAME=?
     );
-    `,
+  `,
   RANKING: `
   SELECT CHAR_RANK, CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP 
   FROM (
     SELECT CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP,
     @Rank := @Rank + 1 AS CHAR_RANK
     FROM CHARACTERS C, (SELECT @Rank := 0) R
-    ORDER BY CHAR_LV DESC, CHAR_EXP DESC
+    ORDER BY CHAR_LV DESC, CHAR_CUR_EXP DESC
     ) C
   WHERE CHAR_RANK <= 100;
   `,
@@ -72,9 +108,10 @@ module.exports.select = {
     SELECT CHAR_NAME, CHAR_LV, CHAR_EXP, CHAR_CUR_EXP, PLAYER_ID,
     @Rank := @Rank + 1 AS CHAR_RANK
     FROM CHARACTERS C, (SELECT @Rank := 0) R
-    ORDER BY CHAR_LV DESC, CHAR_EXP DESC
+    WHERE PLAYER_ID=?
+    ORDER BY CHAR_LV DESC, CHAR_CUR_EXP DESC
     ) C
-  WHERE PLAYER_ID=?;
+  ;
   `,
   SIGNIN_EMAIL: `
   SELECT * FROM (
@@ -123,5 +160,10 @@ module.exports.select = {
   ITEMS: `
   SELECT *
   FROM ITEMS;
+  `,
+  ITEM: `
+  SELECT *
+  FROM ITEMS
+  WHERE ITEM_ID=?;
   `,
 };

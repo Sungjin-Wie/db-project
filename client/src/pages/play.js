@@ -44,9 +44,23 @@ const Play = () => {
   };
 
   const handleCreateCharacter = () => {
-    dispatch(
-      createCharacter({ characterName: newCharacterName, name, navigate })
-    );
+    var getTextLength = function (str) {
+      var len = 0;
+      for (var i = 0; i < str.length; i++) {
+        if (escape(str.charAt(i)).length == 6) {
+          len++;
+        }
+        len++;
+      }
+      return len;
+    };
+    if (getTextLength(newCharacterName) > 12) {
+      alert("캐릭터 이름은 6글자 이하로 설정해주세요.");
+    } else {
+      dispatch(
+        createCharacter({ characterName: newCharacterName, name, navigate })
+      );
+    }
   };
   return (
     <>

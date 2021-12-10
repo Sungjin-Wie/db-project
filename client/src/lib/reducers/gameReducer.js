@@ -1,15 +1,19 @@
 import {
   GAME_MESSAGE,
   GAME_SET_LOCATION,
+  GAME_BATTLE_START,
   ERROR,
   FETCH_CHARACTER_DATA,
+  GAME_BATTLE_TURN_POST,
+  POST_BATTLE_CHARACTER,
+  POST_SELL,
 } from "../actions";
 
 export const gameState = {
   currentCharacter: {},
   inventory: [],
   message: ["", "", "", "", ""],
-  location: ["마을", "사냥터", "상점", "여관"],
+  location: ["마을", "사냥터", "상점", "전투", "여관"],
   currentLoc: 0,
   mobs: [],
   items: [],
@@ -64,6 +68,39 @@ const gameReducer = (state = gameState, action) => {
       };
       console.log(returnState);
       return returnState;
+    }
+    case GAME_BATTLE_START: {
+      const { payload } = action;
+      return {
+        ...state,
+        currentBattleMob: payload,
+      };
+    }
+    case GAME_BATTLE_TURN_POST: {
+      const { currentCharacter, currentBattleMob } = action.payload;
+      return {
+        ...state,
+        currentCharacter,
+        currentBattleMob,
+      };
+    }
+    case POST_BATTLE_CHARACTER: {
+      let { currentCharacter, inventory } = action.payload;
+      return {
+        ...state,
+        currentCharacter: { ...state.currentCharacter, ...currentCharacter },
+        stats: { ...state.currentCharacter, ...currentCharacter },
+        inventory,
+      };
+    }
+    case POST_SELL: {
+      let { currentCharacter } = action.payload;
+      console.log(currentCharacter);
+      return {
+        ...state,
+        currentCharacter: { ...state.currentCharacter, ...currentCharacter },
+        stats: { ...state.currentCharacter, ...currentCharacter },
+      };
     }
     case ERROR:
       return {

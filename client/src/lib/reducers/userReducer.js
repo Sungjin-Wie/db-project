@@ -5,6 +5,7 @@ import {
   FETCH_CHARACTERS,
   SELECT_CHARACTER,
   ERROR,
+  POST_SELECT_CHARACTER,
 } from "../actions";
 
 export const userState = {
@@ -48,6 +49,16 @@ const userReducer = (state = userState, action) => {
       return {
         ...state,
         currentCharacter: payload,
+      };
+    }
+    case POST_SELECT_CHARACTER: {
+      const { currentCharacter } = action.payload;
+      let idx = -1;
+      for (let char in state.characters) {
+      }
+      return {
+        ...state,
+        currentCharacter,
       };
     }
     case ERROR:
