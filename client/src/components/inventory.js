@@ -10,9 +10,6 @@ import { useSelector } from "react-redux";
 
 export default function BasicTable() {
   const { inventory } = useSelector((state) => state.game);
-  useEffect(() => {
-    console.log(inventory);
-  }, []);
   return (
     <TableContainer component={Paper}>
       <Table size="small" aria-label="simple table">
@@ -28,7 +25,6 @@ export default function BasicTable() {
           {(inventory &&
             inventory.map((row) => {
               let { ITEM_ID, ITEM_NAME, ITEM_QTY } = row;
-              console.log(ITEM_ID, ITEM_NAME, ITEM_QTY);
               return (
                 <TableRow
                   key={row.ITEM_ID}

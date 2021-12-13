@@ -41,7 +41,6 @@ function Row(props) {
           },
         })
         .then((res) => {
-          console.log(res.data);
           dispatch({
             type: POST_BATTLE_CHARACTER,
             payload: res.data,
@@ -117,7 +116,6 @@ export default function BasicTable() {
           {(inven &&
             inven.map((row) => {
               let { ITEM_ID, ITEM_NAME, ITEM_VALUE } = row;
-              console.log(ITEM_ID, ITEM_NAME, ITEM_VALUE);
               return <Row key={ITEM_ID} row={row} />;
             })) ||
             ""}

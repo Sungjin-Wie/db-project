@@ -37,7 +37,6 @@ function Row(props) {
       setQty(0);
     } else {
       api.call.get("/item", { params: { id: row.ITEM_ID } }).then((res) => {
-        console.log(res.data[0]);
         let value = res.data[0].ITEM_VALUE * Number(qty);
         api.call
           .get("/trade", {
@@ -49,7 +48,6 @@ function Row(props) {
             },
           })
           .then((res) => {
-            console.log(res.data);
             dispatch({
               type: POST_BATTLE_CHARACTER,
               payload: res.data,
@@ -105,7 +103,6 @@ export default function BasicTable() {
   const { inventory } = useSelector((state) => state.game);
   let [inven, setInven] = useState([]);
   useEffect(() => {
-    console.log(inventory);
     setInven(inventory);
   }, []);
 
@@ -124,7 +121,6 @@ export default function BasicTable() {
           {(inventory &&
             inventory.map((row) => {
               let { ITEM_ID, ITEM_NAME, ITEM_QTY } = row;
-              console.log(ITEM_ID, ITEM_NAME, ITEM_QTY);
               return <Row key={ITEM_ID} row={row} />;
             })) ||
             ""}

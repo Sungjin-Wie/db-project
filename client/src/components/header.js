@@ -96,7 +96,6 @@ export default function PrimarySearchAppBar() {
           </Box>
         </Toolbar>
       </AppBar>
-      {/* <pre onClick={() => console.log(user)}>{JSON.stringify(user, null, 2)}</pre> */}
     </Box>
   );
 }

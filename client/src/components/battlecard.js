@@ -14,10 +14,6 @@ const createStat = (name, value) => {
 
 export default function BattleCard(props) {
   const { type, stats } = props;
-  useEffect(() => {
-    console.log(stats);
-    console.log(type);
-  }, []);
 
   if (type == "char") {
     var {
@@ -91,7 +87,6 @@ export default function BattleCard(props) {
           )}
           {statList &&
             statList.map((row) => {
-              console.log(`row: ${row.name} + ${row.value}`);
               return (
                 <TableRow
                   key={row.name}

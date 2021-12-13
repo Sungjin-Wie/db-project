@@ -71,7 +71,6 @@ const Field = () => {
   const { mobs } = useSelector((state) => state.game);
   const dispatch = useDispatch();
   const handleBattleStart = (mob) => {
-    console.log(mob);
     let currentBattleMob = {
       ...mob,
       MOB_CUR_HP: mob.MOB_HP,
@@ -93,7 +92,6 @@ const Field = () => {
         {`사냥할 몬스터를 선택하세요.`}
       </Typography>
       {mobs.map((mob) => {
-        console.log(mob);
         const {
           MOB_ID,
           MOB_NAME,
@@ -219,10 +217,6 @@ export default function GameScreen() {
   );
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(inventory, location, currentLoc);
-  }, []);
 
   const handleSetLocation = (loc, msg) => {
     dispatch(setLocation(loc, msg));

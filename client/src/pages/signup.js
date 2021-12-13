@@ -41,7 +41,6 @@ export default function SignUp() {
   const global = useSelector((state) => state.global);
   const { loading } = global;
   const handleSubmit = (event) => {
-    console.log(event);
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     // eslint-disable-next-line no-console

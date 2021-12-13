@@ -65,7 +65,6 @@ const Game = () => {
     }
   }, []);
   const game = useSelector((state) => state.game);
-  const testMessage = () => console.log(game);
 
   return (
     <>
@@ -87,7 +86,6 @@ const Game = () => {
                 <Grid item md={8} lg={8}>
                   <Typography variant="h5">System</Typography>
                   <SystemTable />
-                  <Button onClick={() => testMessage()}>테스트</Button>
                 </Grid>
                 <Grid item md={4} lg={4}>
                   <Typography variant="h5">인벤토리</Typography>

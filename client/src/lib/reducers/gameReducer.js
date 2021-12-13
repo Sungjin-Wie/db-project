@@ -22,7 +22,6 @@ export const gameState = {
 
 const gameReducer = (state = gameState, action) => {
   const { type } = action;
-  console.log(type);
   switch (type) {
     case GAME_MESSAGE: {
       const { payload } = action;
@@ -51,11 +50,8 @@ const gameReducer = (state = gameState, action) => {
     }
     case FETCH_CHARACTER_DATA: {
       const { payload } = action;
-      console.log(payload);
       const { stats, inventory, mobs, items } = payload;
-      console.log(inventory);
       let returnState = { ...state };
-      console.log(returnState);
       if (inventory !== undefined) returnState = { ...state, ...inventory };
       if (stats !== undefined)
         returnState = { ...returnState, stats, currentCharacter: { ...stats } };
@@ -66,7 +62,6 @@ const gameReducer = (state = gameState, action) => {
         currentLoc: 0,
         items,
       };
-      console.log(returnState);
       return returnState;
     }
     case GAME_BATTLE_START: {
@@ -95,7 +90,6 @@ const gameReducer = (state = gameState, action) => {
     }
     case POST_SELL: {
       let { currentCharacter } = action.payload;
-      console.log(currentCharacter);
       return {
         ...state,
         currentCharacter: { ...state.currentCharacter, ...currentCharacter },

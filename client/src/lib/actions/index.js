@@ -27,12 +27,10 @@ export const HANDLE_INN = "game/handleInn";
 export const userLogin = (payload) => async (dispatch) => {
   let res;
   try {
-    console.log(payload);
     const { email, password, navigate } = payload;
     dispatch(setLoading());
     res = await api.call.post("/signin", { email, password });
     dispatch(setLoadingComplete());
-    console.log(res.data);
     switch (res.data) {
       case 101: {
         alert("아이디를 입력해주세요.");
@@ -56,18 +54,14 @@ export const userLogin = (payload) => async (dispatch) => {
         return dispatch({ type: USER_LOGIN, payload: { ...res.data } });
       }
     }
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
 };
 
 export const userSignUp = (payload) => async (dispatch) => {
   try {
-    console.log(payload);
     const { email, password, name, navigate } = payload;
     dispatch(setLoading());
     const res = await api.call.post("/signup", { email, password, name });
-    console.log(res);
     dispatch(setLoadingComplete());
     switch (res.data) {
       case 100: {
@@ -90,9 +84,7 @@ export const userSignUp = (payload) => async (dispatch) => {
       default:
         return dispatch({ type: ERROR });
     }
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
 };
 
 export const userLogout = (navigate) => async (dispatch) => {
@@ -104,7 +96,6 @@ export const userLogout = (navigate) => async (dispatch) => {
 export const createCharacter =
   ({ characterName, name, navigate }) =>
   async (dispatch) => {
-    console.log(characterName, name);
     if (characterName == "") {
       alert("캐릭터 이름을 입력해주세요.");
       return dispatch({ type: ERROR });
@@ -114,7 +105,6 @@ export const createCharacter =
         characterName,
         name,
       });
-      console.log(res.data);
       dispatch(setLoadingComplete());
       switch (res.data) {
         case 100:
@@ -135,15 +125,11 @@ export const createCharacter =
   };
 
 export const userGameStart = (char, navigate) => async (dispatch) => {
-  console.log(char);
   let res = await api.call.get("/playerInfo", { params: { id: char.CHAR_ID } });
-  console.log(res.data);
   let payload = { stats: { ...char }, inventory: { ...res.data } };
   res = await api.call.get("/mobs");
-  console.log(res.data);
   payload = { ...payload, mobs: res.data };
   res = await api.call.get("/items");
-  console.log(res.data);
   payload = { ...payload, items: res.data };
   dispatch({
     type: FETCH_CHARACTER_DATA,
@@ -183,7 +169,6 @@ export const userAttack =
       // 서버에 바뀐 데이터 반영 필요
       let data = { ...currentCharacter, ...currentBattleMob, loot };
       let res = await api.call.post("/postbattle", data);
-      console.log(res.data);
       let postInventory = res.data.inventory;
       let postCharacter = res.data.currentCharacter;
       dispatch({
@@ -219,7 +204,6 @@ export const userAttack =
       currentBattleMob.MOB_EXP = 0;
       let data = { ...currentCharacter, ...currentBattleMob, loot: false };
       let res = await api.call.post("/postbattle", data);
-      console.log(res.data);
       let postInventory = res.data.inventory;
       let postCharacter = res.data.currentCharacter;
       dispatch({
@@ -241,7 +225,6 @@ export const userAttack =
 export const userDrinkHPPotion = (currentCharacter) => async (dispatch) => {
   let data = { currentCharacter };
   let res = await api.call.post("/potion", data);
-  console.log(res.data);
   return dispatch({
     type: POST_BATTLE_CHARACTER,
     payload: res.data,
@@ -256,13 +239,6 @@ export const restAtInn = (CHAR_ID) => async (dispatch) => {
   });
 };
 
-// export const fetchCharData = (CHAR_ID) => async (dispatch) => {
-//   console.log(CHAR_ID);
-//   const res = await api.call.get("/playerInfo", { params: { id: CHAR_ID } });
-//   console.log(res);
-//   return dispatch({ type: FETCH_CHARACTER_DATA, payload: { ...res.data } });
-// };
-
 export const addGameMessage = (newMessage) => {
   return { type: GAME_MESSAGE, payload: { newMessage } };
 };
@@ -274,9 +250,7 @@ export const setLocation = (location, message) => (dispatch) => {
 // 0 - 마을, 1 - 사냥터, 2 - 상점, 3 - 전투
 
 export const fetchCharacters = (name) => async (dispatch) => {
-  console.log(name);
   const res = await api.call.post("/fetchcharacters", { name });
-  console.log(res.data);
   return dispatch({ type: FETCH_CHARACTERS, payload: res.data });
 };
 

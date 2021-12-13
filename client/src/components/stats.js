@@ -15,9 +15,6 @@ const createStat = (name, value) => {
 
 export default function Stats() {
   const { stats } = useSelector((state) => state.game);
-  useEffect(() => {
-    console.log(stats);
-  }, []);
   const {
     CHAR_ATK,
     CHAR_CUR_EXP,
@@ -84,7 +81,6 @@ export default function Stats() {
 
           {statList &&
             statList.map((row) => {
-              console.log(`row: ${row.name} + ${row.value}`);
               return (
                 <TableRow
                   key={row.name}
