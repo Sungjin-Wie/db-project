@@ -25,9 +25,11 @@ router.get(
 //   "/initMobs",
 //   $(async (req, res, next) => {
 //     const mobs = [
-//       params(0, "달팽이", 8, 2, 1, 3, 1000, 40),
-//       params(1, "슬라임", 20, 4, 3, 7, 1001, 40),
-//       params(2, "버섯", 40, 10, 5, 10, 1002, 40),
+//       // params(0, "달팽이", 8, 2, 1, 3, 1000, 40),
+//       // params(1, "슬라임", 20, 4, 3, 7, 1001, 40),
+//       // params(2, "버섯", 40, 10, 5, 10, 1002, 40),
+//       // params(3, "리본돼지", 150, 30, 20, 25, 1003, 40),
+//       params(4, "머쉬맘", 20000, 150, 80, 1000, 1004, 20),
 //     ];
 //     await Promise.all(mobs.map((param) => query(q.insert.MOB, param)));
 //     console.log("finished");
@@ -39,11 +41,13 @@ router.get(
 //   "/initItem",
 //   $(async (req, res, next) => {
 //     const items = [
-//       params(1000, "달팽이 껍질", 5),
-//       params(1001, "슬라임의 방울", 10),
-//       params(1002, "버섯의 갓", 20),
-//       params(2000, "HP 회복물약", 10),
-//       params(2001, "MP 회복물약", 20),
+//       // params(1000, "달팽이 껍질", 5),
+//       // params(1001, "슬라임의 방울", 10),
+//       // params(1002, "버섯의 갓", 20),
+//       // params(1003, "돼지의 리본", 30),
+//       params(1004, "머쉬맘의 포자", 500),
+//       // params(2000, "HP 회복물약", 10),
+//       // params(2001, "MP 회복물약", 20),
 //     ];
 //     await Promise.all(items.map((param) => query(q.insert.ITEM, param)));
 //     console.log("finished");
@@ -155,7 +159,7 @@ router.post(
           CHAR_MP + 1,
           CHAR_MP + 1,
           POST_EXP - CHAR_EXP,
-          CHAR_EXP + 10,
+          Math.floor((CHAR_LV + 1) ** 2.5),
           CHAR_LV + 1,
           CHAR_ATK + 1,
           CHAR_DEF + 1,
@@ -169,7 +173,7 @@ router.post(
         CHAR_CUR_MP: CHAR_MP + 1,
         CHAR_MP: CHAR_MP + 1,
         CHAR_CUR_EXP: POST_EXP - CHAR_EXP,
-        CHAR_EXP: CHAR_EXP + 10,
+        CHAR_EXP: Math.floor((CHAR_LV + 1) ** 2.5),
         CHAR_ATK: CHAR_ATK + 1,
         CHAR_DEF: CHAR_DEF + 1,
         CHAR_LV: CHAR_LV + 1,
@@ -213,20 +217,169 @@ router.get(
 router.get(
   "/trade",
   $(async (req, res, next) => {
-    let { id, qty, action, value, char } = req.query;
+    let { id, action, char, tradeQty } = req.query;
     //sell, buy에 따라 다르게
+    tradeQty = Number(tradeQty);
+    let ITEM_ID = id;
+    let CHAR_ID = char;
+    let ITEM_QTY, value;
+    let currentCharacter;
+    let [rows] = await query(q.select.CHAR_WITH_ID, params(CHAR_ID));
+    let character = rows[0];
+    currentCharacter = character;
+    [rows] = await query(q.select.ITEM, params(ITEM_ID));
+    let item = rows[0];
+    [rows] = await query(q.select.INVENTORY, params(char));
+    let inventory = rows;
     if (action == "sell") {
       // 캐릭터 자금 업데이트
-      let [rows] = await query(q.select.CHAR_WITH_ID, params(char));
-      console.log(rows[0]);
-      let money = Number(rows[0].CHAR_MONEY) + value;
-      let currentCharacter = { ...rows[0], CHAR_MONEY: money };
-      console.log(currentCharacter);
-      // 인벤토리 수량 업데이트
-      res.send(currentCharacter);
+      for (let i in inventory)
+        if (inventory[i].ITEM_ID == ITEM_ID) {
+          ITEM_QTY = Number(inventory[i].ITEM_QTY);
+          if (ITEM_QTY >= tradeQty) inventory[i].ITEM_QTY = ITEM_QTY - tradeQty;
+          break;
+        }
+      console.log(`current qty : ${ITEM_QTY}, tradeQty: ${tradeQty}`);
+      if (ITEM_QTY < tradeQty) {
+        res.send({ currentCharacter, inventory });
+      } else {
+        value = Number(item.ITEM_VALUE) * Number(tradeQty);
+        let money = Number(character.CHAR_MONEY) + Number(value);
+        currentCharacter = { ...character, CHAR_MONEY: money };
+        console.log(money);
+        await query(q.update.ITEM_TRADE_CHARACTER, params(money, CHAR_ID));
+        // 인벤토리 수량 업데이트
+        await query(
+          q.update.ITEM,
+          params(ITEM_QTY - tradeQty, CHAR_ID, ITEM_ID)
+        );
+        res.send({ currentCharacter, inventory });
+      }
     } else {
+      // 구매
       // 캐릭터 자금 업데이트
-      // 인벤토리 수량 업데이트
+      value = Number(item.ITEM_VALUE) * Number(tradeQty);
+      let money = Number(currentCharacter.CHAR_MONEY) - value;
+      if (money < 0) {
+        res.send({ currentCharacter, inventory });
+      } else {
+        currentCharacter.CHAR_MONEY = money;
+        console.log(money);
+        await query(q.update.ITEM_TRADE_CHARACTER, params(money, CHAR_ID));
+        console.log(currentCharacter);
+        // 인벤토리 수량 업데이트
+        // 인벤토리에 정보 있나 확인후 없으면 insert, 있으면 update
+        let idx = -1;
+        for (const item in inventory)
+          if (ITEM_ID == inventory[item].ITEM_ID) {
+            idx = item;
+            break;
+          }
+        console.log(idx);
+        //idx가 0 이상이면 update, -1이면 새로 삽입
+        if (idx >= 0) {
+          console.log("goo");
+          let updateQty = Number(inventory[idx].ITEM_QTY) + Number(tradeQty);
+          inventory[idx].ITEM_QTY = updateQty;
+          await query(q.update.ITEM, params(updateQty, CHAR_ID, ITEM_ID));
+        } else {
+          console.log("foo");
+          let updateQty = tradeQty;
+          let [rows] = await query(q.select.ITEM, params(ITEM_ID));
+          console.log(rows);
+          let ITEM_NAME = rows[0].ITEM_NAME;
+          await query(
+            q.insert.INVENTORY,
+            params(CHAR_ID, ITEM_ID, ITEM_NAME, updateQty)
+          );
+          [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+          inventory = rows;
+        }
+        res.send({ currentCharacter, inventory });
+      }
+    }
+  })
+);
+
+router.post(
+  "/potion",
+  $(async (req, res, next) => {
+    let { currentCharacter } = req.body;
+    console.log(currentCharacter);
+    let { CHAR_ID, CHAR_CUR_HP, CHAR_HP } = req.body.currentCharacter;
+    let ITEM_ID = 2000;
+    // CHAR_ID로 인벤토리를 불러옴.
+    let [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+    let inventory = rows;
+    console.log(inventory);
+    let idx = -1;
+    for (const item in inventory) {
+      console.log(item);
+      if (ITEM_ID == inventory[item].ITEM_ID) {
+        idx = item;
+        break;
+      }
+    }
+    console.log(idx);
+    if (idx >= 0) {
+      // 포션의 흔적이 인벤토리에 있습니다.
+      console.log("goo");
+      let updateQty = Number(inventory[idx].ITEM_QTY) - 1;
+      inventory[idx].ITEM_QTY = updateQty;
+      var flag = false;
+      if (updateQty < 0) {
+        inventory[idx].ITEM_QTY = 0;
+        res.send({ currentCharacter, inventory });
+        flag = true;
+      } else {
+        console.log(inventory[idx].ITEM_QTY);
+        // 포션 하나 먹었습니다.
+        await query(q.update.ITEM, params(updateQty, CHAR_ID, ITEM_ID));
+        // 체력도 올려줬습니다. 100정도 찹니다. 혜자네요.
+        let POST_HP = Number(CHAR_CUR_HP) + 100;
+        if (POST_HP > Number(CHAR_HP)) POST_HP = Number(CHAR_HP);
+        currentCharacter.CHAR_CUR_HP = POST_HP;
+        await query(q.update.DRINK_HP_POTION, params(POST_HP, CHAR_ID));
+      }
+    } else {
+      // 포션이 없으니 안됩니다.
+      // 대신 인벤토리에 수량 0의 포션을 추가해줍시다.
+      console.log("foo");
+      let [rows] = await query(q.select.ITEM, params(ITEM_ID));
+      console.log(rows);
+      let ITEM_NAME = rows[0].ITEM_NAME;
+      await query(q.insert.INVENTORY, params(CHAR_ID, ITEM_ID, ITEM_NAME, 0));
+      [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+      inventory = rows;
+    }
+    if (!flag) res.send({ currentCharacter, inventory });
+  })
+);
+
+router.get(
+  "/inn",
+  $(async (req, res, next) => {
+    let CHAR_ID = req.query.id;
+    let [rows] = await query(q.select.CHAR_WITH_ID, params(CHAR_ID));
+    let currentCharacter = rows[0];
+    [rows] = await query(q.select.INVENTORY, params(CHAR_ID));
+    let inventory = rows;
+    let { CHAR_HP, CHAR_MP, CHAR_MONEY } = currentCharacter;
+    if (Number(CHAR_MONEY) < 10) {
+      res.send({ currentCharacter, inventory });
+    } else {
+      // 돈 업데이트, 피/엠피 업데이트
+      currentCharacter = {
+        ...currentCharacter,
+        CHAR_CUR_HP: CHAR_HP,
+        CHAR_CUR_MP: CHAR_MP,
+        CHAR_MONEY: Number(CHAR_MONEY) - 10,
+      };
+      await query(
+        q.update.REST_IN_INN,
+        params(CHAR_HP, CHAR_MP, Number(CHAR_MONEY) - 10, CHAR_ID)
+      );
+      res.send({ currentCharacter, inventory });
     }
   })
 );

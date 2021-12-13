@@ -1,15 +1,39 @@
 import { useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import { useSelector, useDispatch } from "react-redux";
-import { setLocation, userBattleStart, userAttack } from "../lib/actions";
+import {
+  setLocation,
+  userBattleStart,
+  userAttack,
+  userDrinkHPPotion,
+  addGameMessage,
+  restAtInn,
+} from "../lib/actions";
 import { Button, Typography, Grid } from "@mui/material";
 import { BattleCard, Sell, Buy } from ".";
 import { useNavigate } from "react-router";
 
 const Village = () => {
   const dispatch = useDispatch();
+  const game = useSelector((state) => state.game);
+  const { CHAR_ID, CHAR_MONEY } = game.currentCharacter;
   const handleSetLocation = (loc, msg) => {
     dispatch(setLocation(loc, msg));
+  };
+
+  const handleInn = () => {
+    dispatch(addGameMessage(`여관에 도착했습니다.`));
+    if (
+      window.confirm("여관에서 HP, MP를 회복하시겠습니까? 가격은 10원입니다.")
+    ) {
+      if (Number(CHAR_MONEY) < 10) {
+        alert("돈이 부족합니다.");
+      } else {
+        dispatch(restAtInn(CHAR_ID));
+      }
+    } else {
+      dispatch(addGameMessage(`다시 마을로 이동합니다.`));
+    }
   };
   return (
     <Paper
@@ -28,6 +52,15 @@ const Village = () => {
       >
         <Typography variant="h6" noWrap component="div" color="white">
           상점
+        </Typography>
+      </Button>
+      <Button
+        style={{ margin: 10 }}
+        variant="contained"
+        onClick={() => handleInn()}
+      >
+        <Typography variant="h6" noWrap component="div" color="white">
+          여관
         </Typography>
       </Button>
     </Paper>
@@ -94,7 +127,6 @@ const Shop = () => {
         textAlign: "center",
         justifyContent: "center",
         alignItems: "center",
-        height: 300,
       }}
       elevation={0}
     >
@@ -121,10 +153,12 @@ const Shop = () => {
 const Battle = () => {
   const game = useSelector((state) => state.game);
   const dispatch = useDispatch();
-  const { currentCharacter, currentBattleMob } = game;
+  const { currentCharacter, currentBattleMob, inventory } = game;
   const handleAttack = () =>
     dispatch(userAttack(currentCharacter, currentBattleMob));
-
+  const handleDrinkPotion = () => {
+    dispatch(userDrinkHPPotion(currentCharacter));
+  };
   return (
     <Paper
       sx={{
@@ -157,9 +191,22 @@ const Battle = () => {
         </Typography>
         <BattleCard type={"mob"} stats={currentBattleMob} />
       </Grid>
-      <Button sx={{ mt: 5 }} variant="contained" onClick={() => handleAttack()}>
+      <Button
+        sx={{ mt: 5, mb: 5 }}
+        variant="contained"
+        onClick={() => handleAttack()}
+      >
         <Typography variant="h6" noWrap component="div" color="white">
           공격
+        </Typography>
+      </Button>
+      <Button
+        sx={{ mt: 5, ml: 5, mb: 5 }}
+        variant="contained"
+        onClick={() => handleDrinkPotion()}
+      >
+        <Typography variant="h6" noWrap component="div" color="white">
+          HP포션
         </Typography>
       </Button>
     </Paper>

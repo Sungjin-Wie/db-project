@@ -83,7 +83,7 @@ const Game = () => {
                 alignItems: "center",
               }}
             >
-              <Grid container spacing={2}>
+              <Grid container spacing={2} sx={{ mb: 5 }}>
                 <Grid item md={8} lg={8}>
                   <Typography variant="h5">System</Typography>
                   <SystemTable />

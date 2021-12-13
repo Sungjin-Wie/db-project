@@ -40,7 +40,7 @@ DB온라인에 오신 것을 환영합니다.
 - React.js (Create-React-App)
   
   * react-redux, redux (전역 상태 관리 라이브러리)
-  * redux-thunk (DB 연동 간 비동기 처리를 위한 미들웨어)
+  * redux-thunk (비동기 처리 및 액션 함수 미들웨어)
   * redux-persist (새로고침 등의 상황에서 
                     state 유지를 위한 미들웨어)
   * axios (promise 기반 http 요청을 위한 라이브러리)
@@ -76,16 +76,14 @@ DB온라인에 오신 것을 환영합니다.
 - 게임 플레이
 
   * 캐릭터 생성 / 삭제
+  * 상호작용 (몬스터, 상점 구매/판매 등)
 
 
 `}
       </pre>
-      <SubHeader>구현 예정 기능</SubHeader>
+      {/* <SubHeader>구현 예정 기능</SubHeader>
       <pre>
         {`
-- 게임 플레이
-
-  * 상호작용 (몬스터, 상점 구매/판매 등)
 
 - 마이페이지
 
@@ -96,7 +94,7 @@ DB온라인에 오신 것을 환영합니다.
 
 
 `}
-      </pre>
+      </pre> */}
     </Wrapper>
   );
 };

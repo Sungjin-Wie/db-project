@@ -9,19 +9,51 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Button, TextField } from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import api from "../lib/api";
+import { POST_BATTLE_CHARACTER, addGameMessage } from "../lib/actions";
 
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = useState(false);
+  let { currentCharacter } = useSelector((state) => state.game);
+  let dispatch = useDispatch();
   let [qty, setQty] = useState(0);
 
   let handleBuy = () => {
     if (typeof Number(qty) != "number") {
       alert("숫자만 입력해주세요.");
       setQty(0);
+    } else if (!Number.isInteger(Number(qty)) || Number(qty) <= 0) {
+      alert("자연수만 가능합니다.");
+    } else if (Number(qty) * row.ITEM_VALUE > currentCharacter.CHAR_MONEY) {
+      alert("구매 가능한 액수를 초과했습니다.");
     } else {
-      alert("구매됩니다.");
+      api.call
+        .get("/trade", {
+          params: {
+            id: row.ITEM_ID,
+            tradeQty: Number(qty),
+            qty: 0,
+            action: "buy",
+            value: Number(qty) * row.ITEM_VALUE,
+            char: currentCharacter.CHAR_ID,
+          },
+        })
+        .then((res) => {
+          console.log(res.data);
+          dispatch({
+            type: POST_BATTLE_CHARACTER,
+            payload: res.data,
+          });
+          alert(`구매가 완료되었습니다.`);
+          dispatch(
+            addGameMessage(
+              `구매로 총 ${Number(qty) * row.ITEM_VALUE}원을 사용했습니다.`
+            )
+          );
+          setOpen(!open);
+        });
     }
   };
 
@@ -42,7 +74,7 @@ function Row(props) {
             <Box sx={{ margin: 1, display: "flex" }}>
               <TextField
                 id="outlined-name"
-                label="갯수"
+                label="개수"
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
                 size="small"

@@ -15,12 +15,12 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../lib/api";
-import { POST_SELL } from "../lib/actions";
+import { POST_BATTLE_CHARACTER, addGameMessage } from "../lib/actions";
 
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = useState(false);
-  let [qty, setQty] = useState(0);
+  let [qty, setQty] = useState(Number(row.ITEM_QTY));
   let { currentCharacter } = useSelector((state) => state.game);
   let dispatch = useDispatch();
 
@@ -43,20 +43,22 @@ function Row(props) {
           .get("/trade", {
             params: {
               id: row.ITEM_ID,
-              qty: Number(qty),
+              tradeQty: Number(qty),
               action: "sell",
-              value,
               char: currentCharacter.CHAR_ID,
             },
           })
           .then((res) => {
             console.log(res.data);
             dispatch({
-              type: POST_SELL,
-              payload: { currentCharacter: res.data },
+              type: POST_BATTLE_CHARACTER,
+              payload: res.data,
             });
           });
-        alert(`총 ${value}원을 얻었습니다.`);
+        alert(`판매가 완료되었습니다.`);
+        dispatch(addGameMessage(`판매로 총 ${value}원을 얻었습니다.`));
+        setOpen(!open);
+        setQty(0);
       });
     }
   };
@@ -78,7 +80,7 @@ function Row(props) {
             <Box sx={{ margin: 1, display: "flex" }}>
               <TextField
                 id="outlined-name"
-                label="갯수"
+                label="개수"
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
                 size="small"
@@ -114,7 +116,7 @@ export default function BasicTable() {
           <TableRow>
             <TableCell sx={{ fontWeight: "bold" }}>판매</TableCell>
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
-              갯수
+              개수
             </TableCell>
           </TableRow>
         </TableHead>

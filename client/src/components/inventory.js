@@ -20,7 +20,7 @@ export default function BasicTable() {
           <TableRow>
             <TableCell sx={{ fontWeight: "bold" }}>아이템명</TableCell>
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
-              갯수
+              개수
             </TableCell>
           </TableRow>
         </TableHead>

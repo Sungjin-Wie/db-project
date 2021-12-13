@@ -21,6 +21,8 @@ export const GAME_HANDLE_ATTACK = "game/handleAttack";
 export const GAME_BATTLE_TURN_POST = "game/battleTurnPost";
 export const POST_BATTLE_CHARACTER = "game/postBattleCharacter";
 export const POST_SELL = "game/postSell";
+export const DRINK_POTION = "game/drinkPotion";
+export const HANDLE_INN = "game/handleInn";
 
 export const userLogin = (payload) => async (dispatch) => {
   let res;
@@ -166,8 +168,8 @@ export const userAttack =
       currentCharacter;
     const { MOB_ATK, MOB_DEF, MOB_CUR_HP, MOB_NAME, DROP_RATE, ITEM_ID } =
       currentBattleMob;
-    let userDamageToMob = CHAR_ATK - MOB_DEF;
-    if (userDamageToMob <= 0) userDamageToMob = 1;
+    let userDamageToMob = Math.floor(CHAR_ATK / (1 + MOB_DEF / 100));
+    if (userDamageToMob <= 1) userDamageToMob = 1;
     dispatch(
       addGameMessage(
         `${CHAR_NAME}의 공격으로 ${MOB_NAME}에게 ${userDamageToMob}의 데미지!`
@@ -197,8 +199,8 @@ export const userAttack =
         setLocation(1, `전투에서 이겼습니다! 사냥터로 돌아갑니다.`)
       );
     }
-    let mobDamageToUser = MOB_ATK - CHAR_DEF;
-    if (mobDamageToUser <= 0) mobDamageToUser = 1;
+    let mobDamageToUser = Math.floor(MOB_ATK / (1 + CHAR_DEF / 100));
+    if (mobDamageToUser <= 1) mobDamageToUser = 1;
     dispatch(
       addGameMessage(
         `${MOB_NAME}의 공격으로 ${CHAR_NAME}에게 ${mobDamageToUser}의 데미지!`
@@ -210,7 +212,9 @@ export const userAttack =
       currentCharacter.CHAR_CUR_HP = 50;
       currentCharacter.CHAR_CUR_MP = 5;
       currentCharacter.CHAR_CUR_EXP = parseInt(
-        currentCharacter.CHAR_CUR_EXP / 2
+        currentCharacter.CHAR_CUR_EXP - currentCharacter.CHAR_EXP * 0.1 < 0
+          ? 0
+          : currentCharacter.CHAR_CUR_EXP - currentCharacter.CHAR_EXP * 0.1
       );
       currentBattleMob.MOB_EXP = 0;
       let data = { ...currentCharacter, ...currentBattleMob, loot: false };
@@ -233,6 +237,24 @@ export const userAttack =
       payload: { currentCharacter, currentBattleMob },
     });
   };
+
+export const userDrinkHPPotion = (currentCharacter) => async (dispatch) => {
+  let data = { currentCharacter };
+  let res = await api.call.post("/potion", data);
+  console.log(res.data);
+  return dispatch({
+    type: POST_BATTLE_CHARACTER,
+    payload: res.data,
+  });
+};
+
+export const restAtInn = (CHAR_ID) => async (dispatch) => {
+  let res = await api.call.get("/inn", { params: { id: CHAR_ID } });
+  return dispatch({
+    type: POST_BATTLE_CHARACTER,
+    payload: res.data,
+  });
+};
 
 // export const fetchCharData = (CHAR_ID) => async (dispatch) => {
 //   console.log(CHAR_ID);
